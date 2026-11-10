@@ -1,0 +1,2034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10131c">
+  <meta name="application-name" content="JetX Zambia">
+  <title>Wallet | JetX Zambia</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body { background-color: #09090b; color: white; font-family: sans-serif; margin: 0; padding-bottom: 80px; }
+    .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; background: #111827; position: sticky; top: 0; z-index: 100; }
+    .logo { color: #ffc857; font-size: 20px; font-weight: 900; display: flex; align-items: center; gap: 9px; min-width: 0; filter: drop-shadow(0 0 8px rgba(255, 200, 87, 0.28)); }
+    .logo img { width: 34px; height: 34px; flex: 0 0 34px; object-fit: cover; border: 1px solid rgba(255, 216, 111, 0.7); border-radius: 10px; background: rgba(0, 0, 0, 0.26); filter: drop-shadow(0 0 8px rgba(255, 200, 87, 0.62)); }
+     .logo-wordmark { font-family: "Arial Black", "Trebuchet MS", sans-serif; font-size: clamp(20px, 5.5vw, 27px); font-weight: 1000; line-height: 1; letter-spacing: -0.085em; white-space: nowrap; color: #ffc857; -webkit-text-stroke: 0.35px rgba(255, 232, 154, 0.72); paint-order: stroke fill; }
+    .balance { font-weight: bold; font-size: 16px; color: #22c55e; display: flex; align-items: center; gap: 5px; }
+
+    .wallet-container { padding: 20px; max-width: 600px; margin: 0 auto; }
+    .wallet-card { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 15px; padding: 25px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .wallet-label { color: #9ca3af; font-size: 14px; margin-bottom: 5px; }
+    .wallet-balance { font-size: 32px; font-weight: bold; color: #fff; margin-bottom: 20px; }
+
+    .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+    .btn-wallet { padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; transition: transform 0.2s; }
+    .btn-wallet:active { transform: scale(0.98); }
+    .btn-deposit-w { background: var(--sc-green); color: var(--sc-text); }
+    .btn-withdraw-w { background: var(--sc-orange); color: var(--sc-text); }
+
+    .section-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+    .history-container { background: #111827; border-radius: 12px; border: 1px solid #1f2937; overflow: hidden; }
+    .tx-item { padding: 15px; border-bottom: 1px solid #1f2937; display: flex; justify-content: space-between; align-items: center; }
+    .tx-item:last-child { border-bottom: none; }
+    .tx-info h4 { margin: 0; font-size: 14px; text-transform: capitalize; }
+    .tx-info p { margin: 2px 0 0 0; font-size: 11px; color: #9ca3af; }
+    .tx-amount { font-weight: bold; font-size: 14px; }
+    .amt-deposit { color: #22c55e; }
+    .amt-withdrawal { color: #f59e0b; }
+    .tx-status { font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-top: 3px; display: inline-block; }
+    .status-success { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .status-pending { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .status-failed { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+    .info-card { background: #1f2937; padding: 15px; border-radius: 10px; margin-top: 30px; border-left: 4px solid #3b82f6; }
+    .info-card p { margin: 5px 0; font-size: 13px; color: #d1d5db; line-height: 1.4; }
+
+    .footer { position: fixed; bottom: 0; width: 100%; background: #111827; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #1f2937; z-index: 10; }
+    .footer a { color: #9ca3af; text-decoration: none; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .footer a.active { color: #ef4444; }
+
+    .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+    .popup-content { background: #111827; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; position: relative; max-height: 90vh; overflow-y: auto; border: 1px solid #1f2937; }
+    .popup-close { position: absolute; top: 10px; right: 15px; color: white; cursor: pointer; font-size: 24px; font-weight: bold; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 12px; color: #9ca3af; }
+    .form-control { width: 100%; padding: 10px; background: #111827; border: 1px solid #374151; color: white; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
+    .btn-submit { width: 100%; padding: 12px; background: #e11d48; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+    .preset { background: #1f2937; border: none; color: white; padding: 10px 0; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .bet-presets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 10px; }
+
+    #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
+    .toast-msg { padding: 15px 20px; border-radius: 8px; font-weight: bold; font-size: 14px; text-align: center; color: white; opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); pointer-events: auto; }
+    .toast-msg.show { opacity: 1; transform: translateY(0); }
+    .toast-success { background: linear-gradient(135deg, #16a34a, #22c55e); }
+    .toast-error { background: linear-gradient(135deg, #dc2626, #ef4444); }
+
+    .error-msg { color: #ef4444; font-size: 12px; margin-top: 5px; display: none; }
+    .success-msg { color: #22c55e; font-size: 14px; text-align: center; margin-top: 10px; display: none; }
+    .spinner { display: none; position: relative; margin: 10px auto; width: 58px; height: 20px; border: 0; border-radius: 0; background: transparent; animation: none; overflow: visible; }
+    .spinner::before { content: ""; position: absolute; top: 6px; left: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--sc-red); box-shadow: 16px 0 0 var(--sc-red), 32px 0 0 var(--sc-red); animation: dottedLoading 1s ease-in-out infinite; }
+    .inline-dots { display: inline-block; position: relative; width: 24px; height: 10px; margin-left: 5px; vertical-align: middle; }
+    .inline-dots::before { content: ""; position: absolute; top: 3px; left: 0; width: 5px; height: 5px; border-radius: 50%; background: var(--sc-green); box-shadow: 9px 0 0 var(--sc-green), 18px 0 0 var(--sc-green); animation: dottedLoading 1s ease-in-out infinite; }
+    .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 90px; color: var(--sc-muted); font-size: 12px; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes dottedLoading { 0%, 100% { transform: translateY(0); opacity: 0.42; } 50% { transform: translateY(-5px); opacity: 1; } }
+    @keyframes animate-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .animate-bounce { animation: animate-bounce 0.6s ease-in-out; }
+    /* Shared SwiftCrash theme: keep Wallet aligned with index and Menu */
+    :root {
+      --sc-bg: #07080d;
+      --sc-bg-deep: #04050a;
+      --sc-surface: #10131c;
+      --sc-surface-2: #161b28;
+      --sc-surface-3: #1d2433;
+      --sc-border: rgba(148, 163, 184, 0.16);
+      --sc-text: #f8fafc;
+      --sc-muted: #8f9bad;
+       --sc-red: #f0445f;
+       --sc-red-deep: #8f173a;
+      --sc-green: #21d687;
+       --sc-orange: #f0a52b;
+       --sc-orange-deep: #cb6d1e;
+      --sc-gold: #ffc857;
+      --sc-blue: #6b8cff;
+    }
+
+    body[data-theme="soft"] {
+      --sc-bg: #11151d;
+      --sc-bg-deep: #0d1118;
+      --sc-surface: #1a202b;
+      --sc-surface-2: #222a38;
+      --sc-surface-3: #2c3748;
+      --sc-border: rgba(203, 213, 225, 0.2);
+      --sc-muted: #aeb8c7;
+    }
+
+    html, body {
+      background: var(--sc-bg) !important;
+      color: var(--sc-text) !important;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 85% 0%, rgba(240, 68, 95, 0.12), transparent 32rem),
+        radial-gradient(circle at 10% 45%, rgba(107, 140, 255, 0.07), transparent 28rem),
+        var(--sc-bg) !important;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .header,
+    .footer,
+    .tx-tabs {
+      background: rgba(16, 19, 28, 0.94) !important;
+      border-color: var(--sc-border) !important;
+      backdrop-filter: blur(18px);
+    }
+
+    .header {
+      padding: 14px 16px !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+      min-height: 62px;
+    }
+
+    .logo {
+      color: var(--sc-text) !important;
+      letter-spacing: -0.04em;
+      filter: drop-shadow(0 0 8px rgba(240, 68, 95, 0.45)) !important;
+    }
+
+    .header .logo {
+      gap: 9px;
+      min-width: 0;
+      color: var(--sc-gold) !important;
+      filter: drop-shadow(0 0 8px rgba(255, 200, 87, 0.28)) !important;
+    }
+
+    .header .header-aviator-logo {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 216, 111, 0.7);
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.26);
+      filter: drop-shadow(0 0 8px rgba(255, 200, 87, 0.62));
+    }
+
+    .header .logo-lockup {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+    }
+
+    .header .logo-wordmark {
+      font-family: "Arial Black", "Trebuchet MS", sans-serif;
+      font-size: clamp(20px, 5.5vw, 27px);
+      font-weight: 950;
+      line-height: 1;
+      letter-spacing: -0.085em;
+      white-space: nowrap;
+      color: #ffc857;
+      -webkit-text-stroke: 0.35px rgba(255, 232, 154, 0.72);
+      paint-order: stroke fill;
+      filter: drop-shadow(0 0 4px rgba(250, 204, 21, 0.52)) drop-shadow(0 3px 5px rgba(0, 0, 0, 0.55));
+    }
+
+    .header .logo-wordmark strong {
+      color: #fff2a6;
+    }
+
+    .header .jetx-mark {
+      display: inline-block;
+      margin-left: 1px;
+      color: #f5c95f;
+      font-style: italic;
+      font-weight: 1000;
+      letter-spacing: -0.12em;
+      transform: skewX(-12deg);
+    }
+
+    .header .brand-region-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding-left: 2px;
+      color: #86efac;
+      font-size: 8px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+
+    .header .brand-region-tag::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #e11d48;
+      box-shadow: 0 0 5px rgba(225, 29, 72, 0.65);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      min-width: 0;
+    }
+
+    .header .balance {
+      gap: 8px;
+      padding: 2px 0 2px 10px;
+      border-left: 1px solid var(--sc-border);
+      color: var(--sc-green);
+      text-shadow: none;
+    }
+
+    .balance-copy {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      gap: 2px;
+      line-height: 1;
+    }
+
+    .balance-label {
+      color: var(--sc-muted);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .balance-amount {
+      color: var(--sc-text);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .balance-refresh {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: var(--sc-muted);
+      background: transparent;
+      cursor: pointer;
+      transition: color 180ms ease, background 180ms ease, transform 180ms ease;
+    }
+
+    .balance-refresh:hover {
+      color: var(--sc-text);
+      background: var(--sc-surface-2);
+    }
+
+    @media (max-width: 560px) {
+      .header { padding: 10px 12px !important; gap: 8px; }
+      .header .logo { flex: 1 1 auto; min-width: 0; }
+      .header-actions { flex: 0 1 auto; }
+      .header .balance { padding-left: 6px; }
+    }
+
+    .wallet-container {
+      padding: 18px 15px 28px !important;
+    }
+
+    .wallet-card,
+    .history-container,
+    .popup-content {
+      background: var(--sc-surface) !important;
+      border-color: var(--sc-border) !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16);
+    }
+
+    .wallet-card {
+      background:
+        radial-gradient(circle at 100% 0%, rgba(240, 68, 95, 0.18), transparent 12rem),
+        linear-gradient(145deg, var(--sc-surface), var(--sc-surface-2)) !important;
+      border-color: rgba(240, 68, 95, 0.24) !important;
+      border-radius: 18px !important;
+    }
+
+    .wallet-label,
+    .tx-info p,
+    .form-group label {
+      color: var(--sc-muted) !important;
+    }
+
+    .wallet-balance {
+      color: var(--sc-text) !important;
+      letter-spacing: -0.05em;
+    }
+
+    .btn-deposit-w {
+      background: linear-gradient(135deg, var(--sc-green), #0eaa71) !important;
+    }
+
+     .btn-withdraw-w {
+       background: linear-gradient(135deg, var(--sc-orange), var(--sc-orange-deep)) !important;
+    }
+
+    .tx-item {
+      border-color: var(--sc-border) !important;
+    }
+
+    .tx-tabs button,
+    .preset,
+    .form-control {
+      background: var(--sc-surface-2) !important;
+      border-color: var(--sc-border) !important;
+      color: var(--sc-text) !important;
+    }
+
+    .tx-tabs .tx-tab:not(.active) {
+      color: var(--sc-muted) !important;
+    }
+
+    .tx-tabs .tx-tab.active {
+      background: var(--sc-surface-3) !important;
+    }
+
+    .info-card {
+      background: var(--sc-surface-2) !important;
+      border-left-color: var(--sc-blue) !important;
+    }
+
+    .info-card p {
+      color: var(--sc-muted) !important;
+    }
+
+    .footer {
+      padding: 10px 0 12px !important;
+      box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.2);
+    }
+
+    .footer a {
+      color: var(--sc-muted) !important;
+    }
+
+    .footer a.active {
+      color: var(--sc-red) !important;
+    }
+
+    .popup-overlay {
+      background: rgba(2, 3, 7, 0.78) !important;
+      backdrop-filter: blur(8px);
+    }
+
+    .popup-content {
+      border-radius: 18px !important;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--sc-muted) !important;
+    }
+
+    @media (min-width: 700px) {
+      body { max-width: 620px; margin: 0 auto; }
+      .footer { max-width: 620px; left: 50%; transform: translateX(-50%); }
+    }
+
+    /* Premium button interaction system */
+    .sc-interactive-button {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      transform: translateZ(0);
+      transition:
+        transform 180ms cubic-bezier(.2, .7, .2, 1),
+        box-shadow 180ms cubic-bezier(.2, .7, .2, 1),
+        filter 180ms ease;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .sc-interactive-button:hover:not(:disabled):not([aria-disabled="true"]) {
+      transform: translateY(-1px) translateZ(0);
+      filter: brightness(1.035);
+      box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.18),
+        0 0 18px rgba(107, 140, 255, 0.12);
+    }
+
+    .sc-interactive-button:active:not(:disabled):not([aria-disabled="true"]),
+    .sc-interactive-button.sc-pressing {
+      transform: scale(.98) translateY(0) translateZ(0);
+      transition-duration: 70ms;
+      filter: brightness(.99);
+    }
+
+    .sc-interactive-button:focus {
+      outline: none;
+    }
+
+    .sc-interactive-button:focus-visible {
+      outline: 2px solid rgba(143, 164, 255, 0.92);
+      outline-offset: 3px;
+      box-shadow:
+        0 0 0 5px rgba(107, 140, 255, 0.18),
+        0 8px 20px rgba(0, 0, 0, 0.18);
+    }
+
+    .sc-ripple {
+      position: absolute;
+      z-index: 0;
+      width: 1px;
+      height: 1px;
+      border-radius: 50%;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%) scale(0);
+      animation: sc-ripple-out 520ms cubic-bezier(.2, .7, .2, 1) forwards;
+    }
+
+    .sc-interactive-button > *:not(.sc-ripple) {
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes sc-ripple-out {
+      to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(var(--sc-ripple-scale, 150));
+      }
+    }
+
+    .sc-success-content {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .42em;
+    }
+
+    .sc-success-check {
+      width: 1.15em;
+      height: 1.15em;
+      flex: 0 0 auto;
+      stroke-dasharray: 24;
+      stroke-dashoffset: 24;
+      animation: sc-check-draw 360ms cubic-bezier(.65, 0, .35, 1) 40ms forwards;
+    }
+
+    @keyframes sc-check-draw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sc-interactive-button {
+        transition: box-shadow 120ms ease, filter 120ms ease;
+      }
+
+      .sc-interactive-button:hover:not(:disabled):not([aria-disabled="true"]) {
+        transform: none;
+      }
+
+      .sc-interactive-button:active:not(:disabled):not([aria-disabled="true"]),
+      .sc-interactive-button.sc-pressing {
+        transform: scale(.99);
+      }
+
+      .sc-ripple {
+        animation-duration: 1ms;
+      }
+
+      .sc-success-check {
+        animation: none;
+        stroke-dashoffset: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="toast-container"></div>
+
+  <div class="header">
+    <div class="logo">
+      <img src="swift.png" alt="JetX logo" class="header-aviator-logo">
+      <span class="logo-lockup">
+        <span class="logo-wordmark" aria-label="JetX"><strong>Jet</strong><span class="jetx-mark">X</span></span>
+        <span class="brand-region-tag">Zambia</span>
+      </span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-submit" id="headerLoginBtn" style="display:none; width:auto; margin:0; padding:8px 12px; background:var(--sc-blue);" onclick="window.location.href='index.html'">Login</button>
+      <div class="balance" id="headerBalanceWrap" style="display:none;" aria-live="polite" aria-label="Available balance">
+        <span class="balance-copy">
+          <span class="balance-label">Available balance</span>
+          <span id="headerBalance" class="balance-amount">ZMW 0.00</span>
+        </span>
+        <button id="refreshIcon" class="balance-refresh" type="button" onclick="manualRefresh()" aria-label="Refresh balance">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wallet-container" id="authenticatedContent" style="display:none;">
+    <div class="wallet-card">
+      <div class="wallet-label">Available Balance</div>
+      <div class="wallet-balance" id="mainBalance">ZMW 0.00</div>
+
+      <div class="action-buttons">
+        <button class="btn-wallet btn-deposit-w" onclick="openDeposit()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Deposit
+        </button>
+        <button class="btn-wallet btn-withdraw-w" onclick="openWithdraw()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
+          Withdraw
+        </button>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Transaction History
+    </div>
+
+    <div class="tx-tabs" style="display: flex; gap: 10px; margin-bottom: 15px; background: #111827; padding: 5px; border-radius: 8px; border: 1px solid #1f2937;">
+      <button class="tx-tab active" id="tab-all" onclick="filterTx('all', this)" style="flex: 1; padding: 8px; border: none; background: #374151; color: white; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold;">All</button>
+      <button class="tx-tab" id="tab-withdrawal" onclick="filterTx('withdrawal', this)" style="flex: 1; padding: 8px; border: none; background: transparent; color: #9ca3af; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold;">Withdrawal</button>
+      <button class="tx-tab" id="tab-deposit" onclick="filterTx('deposit', this)" style="flex: 1; padding: 8px; border: none; background: transparent; color: #9ca3af; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold;">Deposits</button>
+    </div>
+
+    <div class="history-container" id="txHistory">
+       <div class="loading-state"><span class="spinner" style="display:inline-block;" aria-hidden="true"></span><span>Loading transactions...</span></div>
+    </div>
+
+    <div class="info-card">
+      <p><strong>Wallet Info:</strong></p>
+      <p>• Minimum deposit: ZMW <span id="walletMinimumDeposit">100.00</span></p>
+      <p>• Minimum withdrawal: ZMW <span id="walletMinimumWithdrawal">500.00</span></p>
+      <p>• Processing time: STK confirmation, then mobile-money processing</p>
+      <p id="walletThresholdInfo">• Withdrawal threshold fee: checking current settings…</p>
+      <p>• 24/7 Customer support available</p>
+    </div>
+  </div>
+
+  <div class="wallet-container" id="guestContent" style="display:none; text-align:center; margin-top:50px;">
+    <div class="wallet-card">
+      <h2 style="margin-top:0;">Access Denied</h2>
+      <p style="color:#9ca3af; margin-bottom:20px;">Please login to access your wallet and transactions.</p>
+      <button class="btn-submit" style="background:var(--sc-blue);" onclick="window.location.href='index.html'">Go to Login</button>
+    </div>
+  </div>
+
+  <!-- DEPOSIT POPUP -->
+  <div class="popup-overlay" id="depositPopup">
+    <div class="popup-content">
+      <span class="popup-close" onclick="closeDeposit()">×</span>
+      <h2 style="margin-top:0;">Deposit via STK Push</h2>
+      <div class="form-group">
+        <label>Mobile Money Number</label>
+        <input type="text" class="form-control" id="depositPhone" readonly style="color:#9ca3af; background:#1f2937;">
+      </div>
+      <div class="form-group">
+        <label>Amount (Min ZMW <span id="depositMinimumLabel">100</span>)</label>
+        <input type="number" class="form-control" id="depositAmount" value="100" min="100">
+      </div>
+      <div class="bet-presets">
+        <button class="preset" onclick="setDepositPreset(100)">100</button>
+        <button class="preset" onclick="setDepositPreset(200)">200</button>
+        <button class="preset" onclick="setDepositPreset(500)">500</button>
+        <button class="preset" onclick="setDepositPreset(1000)">1K</button>
+        <button class="preset" onclick="setDepositPreset(5000)">5K</button>
+      </div>
+      <p style="font-size: 14px; color: #9ca3af; text-align:center;">Current Balance: <strong id="depositCurrentBalance" style="color:white;">ZMW 0.00</strong></p>
+      <div class="error-msg" id="depositError"></div>
+      <div class="success-msg" id="depositSuccess"></div>
+      <div id="depositCountdownArea" style="display:none; text-align:center; color:#9ca3af; font-size:12px; margin:10px 0;">
+        Waiting for STK approval · <strong id="depositCountdown" style="color:#f59e0b; font-size:18px;">60</strong>s
+      </div>
+      <div class="spinner" id="depositSpinner"></div>
+      <div id="depositRetryArea" style="display:none; text-align:center; margin-top:10px;">
+        <div style="font-size:12px; color:#f59e0b; margin-bottom:8px;">No deposit was added. You can safely send a new STK payment request.</div>
+        <button class="btn-submit" style="background:#3b82f6; margin-top:0;" onclick="retryDeposit()">Retry Payment</button>
+      </div>
+      <button class="btn-submit" id="submitDepositBtn" style="background:var(--sc-green);" onclick="submitDeposit()">Deposit</button>
+      <button class="btn-submit" id="cancelDepositBtn" style="display:none; background:#374151; color:#d1d5db;" onclick="cancelDeposit()">Close (request remains active)</button>
+    </div>
+  </div>
+
+  <!-- WITHDRAW POPUP -->
+  <div class="popup-overlay" id="withdrawPopup">
+    <div class="popup-content">
+      <span class="popup-close" id="withdrawCloseBtn" onclick="handleWithdrawClose()">×</span>
+      <h2 style="margin-top:0;">Withdraw to Mobile Money</h2>
+
+      <!-- Step 1: Enter details -->
+      <div id="withdrawStep1">
+        <div class="form-group">
+          <label>Mobile Money Number</label>
+          <input type="text" class="form-control" id="withdrawPhone" readonly style="color:#9ca3af; background:#1f2937;">
+        </div>
+        <div class="form-group">
+          <label>Amount (Min ZMW <span id="withdrawMinimumLabel">500</span>)</label>
+          <input type="number" class="form-control" id="withdrawAmount" value="500" min="500" oninput="updateWithdrawFeePreview()">
+        </div>
+        <div class="bet-presets" style="margin-bottom:15px;">
+          <button class="preset" onclick="setWithdrawPreset(500)">500</button>
+          <button class="preset" onclick="setWithdrawPreset(1000)">1K</button>
+          <button class="preset" onclick="setWithdrawPreset(2000)">2K</button>
+          <button class="preset" onclick="setWithdrawPreset(5000)">5K</button>
+          <button class="preset" onclick="setWithdrawPreset(10000)">10K</button>
+        </div>
+        <p style="font-size: 14px; color: #9ca3af; text-align:center;">Current Balance: <strong id="withdrawCurrentBalance" style="color:white;">ZMW 0.00</strong></p>
+
+        <!-- Fee info box (shown when threshold/fee is active) -->
+        <div id="withdrawFeeInfo" style="display:none; background:#1f2937; border:1px solid #f59e0b; border-radius:8px; padding:12px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="color:#9ca3af; font-size:13px;">Withdrawal Amount</span>
+            <span id="withdrawFeeAmountDisplay" style="color:white; font-weight:bold;">ZMW 0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="color:#9ca3af; font-size:13px;">Processing Fee</span>
+            <span id="withdrawFeeDisplay" style="color:#f59e0b; font-weight:bold;">ZMW 0</span>
+          </div>
+          <div style="background:#111827; border-radius:6px; padding:10px; font-size:12px; color:#9ca3af; line-height:1.5;">
+            <strong style="color:#f59e0b;">Threshold fee:</strong> Approve the STK push on your phone. The withdrawal is processed after the fee is confirmed.
+          </div>
+        </div>
+
+        <div class="error-msg" id="withdrawError"></div>
+        <div class="success-msg" id="withdrawSuccess"></div>
+        <div class="spinner" id="withdrawSpinner"></div>
+        <button class="btn-submit" id="submitWithdrawBtn" style="background:var(--sc-orange);" onclick="submitWithdraw()">Withdraw</button>
+      </div>
+
+      <!-- Step 2: Waiting for STK fee payment -->
+      <div id="withdrawStep2" style="display:none; text-align:center;">
+        <div style="background:#1f2937; border-radius:10px; padding:20px; margin-bottom:15px;">
+          <div style="font-size:32px; margin-bottom:10px;">📱</div>
+          <div id="withdrawStepTitle" style="font-weight:bold; font-size:16px; color:white; margin-bottom:8px;">Withdrawal request sent</div>
+          <div id="withdrawStepDescription" style="font-size:13px; color:#9ca3af; margin-bottom:15px;">Verifying your withdrawal request. This status will update when the transaction is confirmed.</div>
+
+          <div style="background:#111827; border-radius:8px; padding:12px; margin-bottom:15px; display:flex; justify-content:space-between;">
+            <div>
+              <div style="color:#9ca3af; font-size:11px;">Withdrawal</div>
+              <div id="wd2Amount" style="color:white; font-weight:bold; font-size:16px;">ZMW 0</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="color:#9ca3af; font-size:11px;">Fee to Pay</div>
+              <div id="wd2Fee" style="color:#f59e0b; font-weight:bold; font-size:16px;">ZMW 0</div>
+            </div>
+          </div>
+
+          <div id="withdrawCountdownArea" style="display:none; margin-bottom:15px;">
+            <div style="color:#9ca3af; font-size:12px; margin-bottom:5px;">STK approval window (seconds)</div>
+            <div id="withdrawCountdown" style="font-size:28px; font-weight:bold; color:#3b82f6;">20</div>
+          </div>
+
+          <div id="withdrawWaitMsg" style="font-size:12px; color:#9ca3af; margin-bottom:15px;">Waiting for your payment confirmation...</div>
+
+          <div id="withdrawRetryArea" style="display:none;"></div>
+
+          <button class="btn-submit" style="background:var(--sc-surface-3); color:var(--sc-muted);" onclick="handleWithdrawClose()">Close</button>
+        </div>
+        <div style="font-size:12px; color:#6b7280; text-align:center;">Your balance stays reserved while we verify this withdrawal.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="index.html">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 2px;" aria-hidden="true"><path d="M4 18.5 8.5 14l3 2.5L20 8"/><path d="M14.5 8H20v5.5"/><path d="M4 21h16"/></svg>
+      Game
+    </a>
+    <a href="Wallet.html" class="active">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 2px;" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="M4 7h14"/><path d="M20 9h-4a2 2 0 0 0 0 4h4"/><circle cx="16" cy="11" r=".6" fill="currentColor"/></svg>
+      Wallet
+    </a>
+    <a href="index.html">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 2px;" aria-hidden="true"><path d="M5 13v-1a7 7 0 0 1 14 0v1"/><path d="M5 13H4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2v-4Z"/><path d="M19 13h1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2v-4Z"/><path d="M18 18c-.8 1.3-2.2 2-4 2h-1"/><circle cx="12" cy="20" r=".8" fill="currentColor"/></svg>
+      Chat
+    </a>
+    <a href="Menu.html">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 2px;" aria-hidden="true"><path d="M4 6h7"/><path d="M16 6h4"/><path d="M4 12h3"/><path d="M12 12h8"/><path d="M4 18h8"/><path d="M17 18h3"/><circle cx="14" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="18" r="2"/></svg>
+      Menu
+    </a>
+  </div>
+
+  <script>
+    const BACKEND_URL = "https://swiftcrashserver.onrender.com";
+    let currentUser = JSON.parse(localStorage.getItem('swiftcrash_user'));
+    let allTransactions = [];
+    let currentTxFilter = 'all';
+
+    // ---- TOAST ----
+    function showNotification(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast-msg toast-${type}`;
+      toast.innerText = message;
+      container.appendChild(toast);
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // ---- INIT ----
+    window.onload = async () => {
+      if (!currentUser) {
+        document.getElementById('guestContent').style.display = 'block';
+      } else {
+        document.getElementById('authenticatedContent').style.display = 'block';
+        updateUI();
+        await fetchTransactions();
+      }
+    };
+
+    function updateUI() {
+      const bal = parseFloat(currentUser.balance || 0).toFixed(2);
+      document.getElementById('headerBalance').innerText = `ZMW ${bal}`;
+      document.getElementById('mainBalance').innerText = `ZMW ${bal}`;
+    }
+
+    // ---- TRANSACTIONS ----
+    async function fetchTransactions() {
+      try {
+        const res = await fetch(`${BACKEND_URL}/transactions-history`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: currentUser.phone })
+        });
+        const data = await res.json();
+        if (data.success) {
+          allTransactions = data.transactions || [];
+          renderTransactions();
+        } else {
+          document.getElementById('txHistory').innerHTML = '<p style="text-align:center; padding:20px; color:#9ca3af;">Could not load transactions.</p>';
+        }
+      } catch (e) {
+        document.getElementById('txHistory').innerHTML = '<p style="text-align:center; padding:20px; color:#ef4444;">Failed to load transactions. Check your connection.</p>';
+      }
+    }
+
+    function filterTx(type, btn) {
+      currentTxFilter = type;
+      document.querySelectorAll('.tx-tab').forEach(tab => {
+        tab.style.background = 'transparent';
+        tab.style.color = '#9ca3af';
+      });
+      if (btn) {
+        btn.style.background = '#374151';
+        btn.style.color = 'white';
+      }
+      renderTransactions();
+    }
+
+    function renderTransactions() {
+      const container = document.getElementById('txHistory');
+      let filtered = allTransactions;
+      if (currentTxFilter !== 'all') {
+        filtered = allTransactions.filter(t => {
+          if (currentTxFilter === 'deposit') return t.type === 'deposit';
+          if (currentTxFilter === 'withdrawal') return t.type === 'withdrawal' || t.type === 'withdraw';
+          return true;
+        });
+      }
+      if (filtered.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding:20px; color:#9ca3af;">No transactions found.</p>';
+      } else {
+        container.innerHTML = filtered.map(t => {
+          const isDeposit = t.type === 'deposit';
+          const amtClass = isDeposit ? 'amt-deposit' : 'amt-withdrawal';
+          const sign = isDeposit ? '+' : '-';
+          const statusClass = t.status === 'success' ? 'status-success' : t.status === 'pending' ? 'status-pending' : 'status-failed';
+          const date = new Date(t.created_at).toLocaleString('en-KE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          return `
+            <div class="tx-item">
+              <div class="tx-info">
+                <h4>${t.type}</h4>
+                <p>${date}</p>
+                <span class="tx-status ${statusClass}">${t.status || 'success'}</span>
+              </div>
+              <div class="tx-amount ${amtClass}">
+                ${sign} ZMW ${parseFloat(t.amount).toFixed(2)}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // ---- BALANCE REFRESH ----
+    async function refreshBalanceSilently() {
+      if (!currentUser) return;
+      try {
+        const res = await fetch(`${BACKEND_URL}/refresh-balance`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+          body: JSON.stringify({ phone: currentUser.phone })
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentUser.balance = parseFloat(data.balance);
+          localStorage.setItem('swiftcrash_user', JSON.stringify(currentUser));
+          updateUI();
+        }
+      } catch (e) {}
+    }
+
+    // =====================
+    //   DEPOSIT LOGIC
+    // =====================
+    function openDeposit() {
+      if (!currentUser) return;
+      document.getElementById('depositPhone').value = currentUser.phone;
+      document.getElementById('depositCurrentBalance').innerText = `ZMW ${parseFloat(currentUser.balance || 0).toFixed(2)}`;
+      document.getElementById('depositAmount').value = 100;
+      document.getElementById('depositPopup').style.display = 'flex';
+      document.getElementById('depositSuccess').style.display = 'none';
+      document.getElementById('depositError').style.display = 'none';
+      document.getElementById('depositSpinner').style.display = 'none';
+      document.getElementById('submitDepositBtn').style.display = 'block';
+    }
+
+    async function submitDeposit() {
+      const amount = parseFloat(document.getElementById('depositAmount').value);
+      const errorEl = document.getElementById('depositError');
+      const successEl = document.getElementById('depositSuccess');
+      const spinner = document.getElementById('depositSpinner');
+      const btn = document.getElementById('submitDepositBtn');
+
+      errorEl.style.display = 'none';
+
+      if (!amount || amount < 100) {
+        errorEl.innerText = "Minimum deposit is ZMW 100";
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      spinner.style.display = 'block';
+      btn.style.display = 'none';
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/pay`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: currentUser.phone, amount })
+        });
+        const data = await res.json();
+        spinner.style.display = 'none';
+
+        if (data.success) {
+          successEl.innerHTML = `STK sent. Waiting for payment confirmation... <span class="inline-dots" aria-label="Loading"></span>`;
+          successEl.style.display = 'block';
+
+          const reference = data.reference;
+          const oldBalance = parseFloat(currentUser.balance || 0);
+          let attempts = 0;
+
+          const checkInterval = setInterval(async () => {
+            attempts++;
+            try {
+              let isSuccess = false;
+              let isFailed = false;
+
+              try {
+                const receiptRes = await fetch(`${BACKEND_URL}/receipt/${reference}?t=${Date.now()}`);
+                const receiptData = await receiptRes.json();
+                if (receiptData.success) {
+                  const status = receiptData.receipt.status;
+                  if (status === "success" || status === "processing") isSuccess = true;
+                  if (status === "cancelled" || status === "error" || status === "stk_failed") isFailed = true;
+                }
+              } catch (e) {}
+
+              await refreshBalanceSilently();
+              if (parseFloat(currentUser.balance) > oldBalance) isSuccess = true;
+
+              if (isSuccess) {
+                clearInterval(checkInterval);
+                window.completeButtonAction(btn, 'Done');
+                successEl.innerHTML = `Payment confirmed ✅ Updating balance... <span class="inline-dots" aria-label="Loading"></span>`;
+
+                setTimeout(() => {
+                  const newBal = parseFloat(currentUser.balance).toFixed(2);
+                  successEl.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span style="margin-top:10px; color:#22c55e; font-weight:bold;">Balance updated successfully!</span></div>`;
+                  document.getElementById('depositCurrentBalance').innerText = `ZMW ${newBal}`;
+                  fetchTransactions();
+                  setTimeout(() => {
+                    document.getElementById('depositPopup').style.display = 'none';
+                    btn.style.display = 'block';
+                    successEl.style.display = 'none';
+                  }, 2000);
+                }, 1000);
+
+              } else if (isFailed || attempts > 20) {
+                clearInterval(checkInterval);
+                errorEl.innerText = isFailed ? "Payment failed or cancelled." : "Taking longer than usual. If successful, your balance will update shortly.";
+                errorEl.style.display = 'block';
+                btn.style.display = 'block';
+                successEl.style.display = 'none';
+              }
+            } catch (e) {}
+          }, 3000);
+
+        } else {
+          errorEl.innerText = "Failed: " + (data.error || "Could not send STK Push");
+          errorEl.style.display = 'block';
+          btn.style.display = 'block';
+        }
+      } catch (err) {
+        spinner.style.display = 'none';
+        errorEl.innerText = "Network error connecting to payment gateway";
+        errorEl.style.display = 'block';
+        btn.style.display = 'block';
+      }
+    }
+
+    // =====================
+    //   WITHDRAW LOGIC
+    // =====================
+    let withdrawPendingId = null;
+    let withdrawPendingRef = null;
+    let withdrawCountdownTimer = null;
+    let withdrawPollTimer = null;
+    let withdrawThresholdActive = false;
+
+    function calcFeePreview(amount) {
+      if (amount < 500) return 0;
+      const tiers = Math.floor((amount - 500) / 100);
+      return 100 + tiers * 50;
+    }
+
+    function updateWithdrawFeePreview() {
+      const amount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
+      const feeInfo = document.getElementById('withdrawFeeInfo');
+      if (!withdrawThresholdActive) { feeInfo.style.display = 'none'; return; }
+      if (amount >= 500) {
+        const fee = calcFeePreview(amount);
+        document.getElementById('withdrawFeeAmountDisplay').innerText = 'ZMW ' + amount.toFixed(0);
+        document.getElementById('withdrawFeeDisplay').innerText = 'ZMW ' + fee;
+        feeInfo.style.display = 'block';
+      } else {
+        feeInfo.style.display = 'none';
+      }
+    }
+
+    async function openWithdraw() {
+      if (!currentUser) { showNotification("Please login first", "error"); return; }
+      document.getElementById('withdrawPhone').value = currentUser.phone;
+      document.getElementById('withdrawCurrentBalance').innerText = `ZMW ${parseFloat(currentUser.balance || 0).toFixed(2)}`;
+      document.getElementById('withdrawAmount').value = 500;
+      document.getElementById('withdrawPopup').style.display = 'flex';
+      document.getElementById('withdrawSuccess').style.display = 'none';
+      document.getElementById('withdrawError').style.display = 'none';
+      document.getElementById('withdrawStep1').style.display = 'block';
+      document.getElementById('withdrawStep2').style.display = 'none';
+      document.getElementById('withdrawSpinner').style.display = 'none';
+      document.getElementById('submitWithdrawBtn').style.display = 'block';
+      document.getElementById('withdrawFeeInfo').style.display = 'none';
+      withdrawPendingId = null;
+      withdrawPendingRef = null;
+      withdrawThresholdActive = false;
+
+      try {
+        const thRes = await fetch(`${BACKEND_URL}/api/threshold-mode`);
+        const thData = await thRes.json();
+        if (thData.success && thData.threshold_mode !== 'disabled') {
+          withdrawThresholdActive = true;
+        }
+      } catch (e) {}
+      updateWithdrawFeePreview();
+    }
+
+    function handleWithdrawClose() {
+      if (withdrawPendingId && withdrawPendingRef) {
+        if (confirm("You have a pending withdrawal. Closing will cancel it and refund your balance. Are you sure?")) {
+          cancelWithdrawal();
+        }
+        return;
+      }
+      document.getElementById('withdrawPopup').style.display = 'none';
+      resetWithdrawUI();
+    }
+
+    function resetWithdrawUI() {
+      clearInterval(withdrawCountdownTimer);
+      clearInterval(withdrawPollTimer);
+      withdrawPendingId = null;
+      withdrawPendingRef = null;
+      withdrawThresholdActive = false;
+      document.getElementById('withdrawStep1').style.display = 'block';
+      document.getElementById('withdrawStep2').style.display = 'none';
+      document.getElementById('submitWithdrawBtn').style.display = 'block';
+      document.getElementById('withdrawSpinner').style.display = 'none';
+      document.getElementById('withdrawError').style.display = 'none';
+      document.getElementById('withdrawSuccess').style.display = 'none';
+      document.getElementById('withdrawRetryArea').style.display = 'none';
+      document.getElementById('withdrawFeeInfo').style.display = 'none';
+    }
+
+    async function submitWithdraw() {
+      const amount = parseFloat(document.getElementById('withdrawAmount').value);
+      const errorEl = document.getElementById('withdrawError');
+      const spinner = document.getElementById('withdrawSpinner');
+      const btn = document.getElementById('submitWithdrawBtn');
+
+      errorEl.style.display = 'none';
+
+      if (!amount || amount < 500) {
+        errorEl.innerText = "Minimum withdrawal is ZMW 500";
+        errorEl.style.display = 'block';
+        return;
+      }
+      if (amount > parseFloat(currentUser.balance || 0)) {
+        errorEl.innerText = "Your account balance is too low, kindly make a deposit";
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      spinner.style.display = 'block';
+      btn.style.display = 'none';
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/withdraw`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: currentUser.phone, amount })
+        });
+        const data = await res.json();
+        spinner.style.display = 'none';
+
+        if (data.success) {
+          currentUser.balance = parseFloat(data.balance);
+          localStorage.setItem('swiftcrash_user', JSON.stringify(currentUser));
+          updateUI();
+
+          if (!data.threshold) {
+            // Direct withdrawal (no fee)
+             window.completeButtonAction(btn, 'Done');
+            document.getElementById('withdrawSuccess').innerHTML = `<div style="display:flex; flex-direction:column; align-items:center;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span style="margin-top:10px; color:#22c55e; font-weight:bold;">Withdrawal successful! Amount will be sent to M-Pesa shortly.</span></div>`;
+            document.getElementById('withdrawSuccess').style.display = 'block';
+            document.getElementById('withdrawCurrentBalance').innerText = `ZMW ${parseFloat(currentUser.balance).toFixed(2)}`;
+            showNotification("Withdrawal successful!", "success");
+            fetchTransactions();
+            setTimeout(() => {
+              document.getElementById('withdrawPopup').style.display = 'none';
+              resetWithdrawUI();
+            }, 2500);
+          } else {
+            // Threshold mode: STK push sent for fee
+            withdrawThresholdActive = true;
+            withdrawPendingId = data.pendingId;
+            withdrawPendingRef = data.reference;
+            document.getElementById('withdrawCurrentBalance').innerText = `ZMW ${parseFloat(currentUser.balance).toFixed(2)}`;
+            document.getElementById('wd2Amount').innerText = 'ZMW ' + parseFloat(data.withdrawAmount).toFixed(0);
+            document.getElementById('wd2Fee').innerText = 'ZMW ' + parseFloat(data.fee).toFixed(0);
+            document.getElementById('withdrawStep1').style.display = 'none';
+            document.getElementById('withdrawStep2').style.display = 'block';
+            document.getElementById('withdrawRetryArea').style.display = 'none';
+            document.getElementById('withdrawCountdownArea').style.display = 'block';
+            document.getElementById('withdrawCountdown').innerText = '60';
+            document.getElementById('withdrawWaitMsg').innerText = 'Waiting for your payment confirmation...';
+
+            if (!data.stkSent) {
+              document.getElementById('withdrawWaitMsg').innerText = 'STK push could not be sent. Please tap Retry.';
+              document.getElementById('withdrawRetryArea').style.display = 'block';
+            }
+
+            startWithdrawCountdown();
+            startWithdrawPoll();
+          }
+        } else {
+          errorEl.innerText = data.error || "Withdrawal failed";
+          errorEl.style.display = 'block';
+          btn.style.display = 'block';
+          showNotification(data.error || "Withdrawal failed", "error");
+        }
+      } catch (err) {
+        spinner.style.display = 'none';
+        errorEl.innerText = "Network error. Try again.";
+        errorEl.style.display = 'block';
+        btn.style.display = 'block';
+      }
+    }
+
+    function startWithdrawCountdown() {
+      let secs = 60;
+      const el = document.getElementById('withdrawCountdown');
+      clearInterval(withdrawCountdownTimer);
+      withdrawCountdownTimer = setInterval(() => {
+        secs--;
+        if (el) el.innerText = secs;
+        if (secs <= 0) {
+          clearInterval(withdrawCountdownTimer);
+          document.getElementById('withdrawCountdownArea').style.display = 'none';
+          document.getElementById('withdrawRetryArea').style.display = 'block';
+          document.getElementById('withdrawWaitMsg').innerText = 'Timer expired. Tap Retry if you did not receive the prompt.';
+        }
+      }, 1000);
+    }
+
+    function startWithdrawPoll() {
+      clearInterval(withdrawPollTimer);
+      let attempts = 0;
+      withdrawPollTimer = setInterval(async () => {
+        attempts++;
+        if (!withdrawPendingId) { clearInterval(withdrawPollTimer); return; }
+        try {
+          const res = await fetch(`${BACKEND_URL}/withdrawal-status/${withdrawPendingId}`);
+          const data = await res.json();
+          if (data.success) {
+            const status = data.withdrawal.status;
+            if (status === 'success') {
+              clearInterval(withdrawPollTimer);
+              clearInterval(withdrawCountdownTimer);
+              await refreshBalanceSilently();
+              window.completeButtonAction(document.getElementById('submitWithdrawBtn'), 'Done');
+              withdrawPendingId = null;
+              withdrawPendingRef = null;
+              document.getElementById('withdrawStep2').innerHTML = `<div style="text-align:center; padding:30px;"><div style="font-size:50px; margin-bottom:15px;">✅</div><div style="font-size:18px; font-weight:bold; color:#22c55e; margin-bottom:10px;">Withdrawal Successful!</div><div style="font-size:13px; color:#9ca3af;">Your amount has been queued for M-Pesa transfer. The fee has been added to your bonus balance.</div></div>`;
+              showNotification("Withdrawal successful!", "success");
+              fetchTransactions();
+              setTimeout(() => {
+                document.getElementById('withdrawPopup').style.display = 'none';
+                resetWithdrawUI();
+              }, 3000);
+            } else if (status === 'cancelled' || status === 'failed') {
+              clearInterval(withdrawPollTimer);
+              clearInterval(withdrawCountdownTimer);
+              withdrawPendingId = null;
+              withdrawPendingRef = null;
+              const msg = status === 'cancelled' ? 'Withdrawal cancelled. Balance refunded.' : 'Withdrawal failed. Balance refunded.';
+              document.getElementById('withdrawStep2').innerHTML = `<div style="text-align:center; padding:30px;"><div style="font-size:50px; margin-bottom:15px;">${status === 'cancelled' ? '❌' : '⚠️'}</div><div style="font-size:18px; font-weight:bold; color:#ef4444; margin-bottom:10px;">${msg}</div></div>`;
+              await refreshBalanceSilently();
+              fetchTransactions();
+              setTimeout(() => {
+                document.getElementById('withdrawPopup').style.display = 'none';
+                resetWithdrawUI();
+              }, 3000);
+            }
+          }
+        } catch (e) {}
+        if (attempts > 40) clearInterval(withdrawPollTimer);
+      }, 3000);
+    }
+
+    async function retryWithdrawStk() {
+      if (!withdrawPendingId) return;
+      document.getElementById('withdrawRetryArea').style.display = 'none';
+      document.getElementById('withdrawCountdownArea').style.display = 'block';
+      document.getElementById('withdrawCountdown').innerText = '60';
+      try {
+        const res = await fetch(`${BACKEND_URL}/withdrawal-retry-stk`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: currentUser.phone, pendingId: withdrawPendingId })
+        });
+        const data = await res.json();
+        if (data.success) {
+          startWithdrawCountdown();
+          document.getElementById('withdrawWaitMsg').innerText = 'New STK push sent. Check your phone.';
+        } else {
+          document.getElementById('withdrawRetryArea').style.display = 'block';
+          document.getElementById('withdrawCountdownArea').style.display = 'none';
+          document.getElementById('withdrawWaitMsg').innerText = 'Retry failed: ' + (data.error || 'Unknown error');
+        }
+      } catch (e) {
+        document.getElementById('withdrawRetryArea').style.display = 'block';
+        document.getElementById('withdrawCountdownArea').style.display = 'none';
+      }
+    }
+
+    async function cancelWithdrawal() {
+      if (!withdrawPendingId) {
+        document.getElementById('withdrawPopup').style.display = 'none';
+        resetWithdrawUI();
+        return;
+      }
+      try {
+        const res = await fetch(`${BACKEND_URL}/cancel-withdrawal`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: currentUser.phone, pendingId: withdrawPendingId })
+        });
+        const data = await res.json();
+        clearInterval(withdrawPollTimer);
+        clearInterval(withdrawCountdownTimer);
+        withdrawPendingId = null;
+        withdrawPendingRef = null;
+        if (data.success) {
+          currentUser.balance = parseFloat(data.balance);
+          localStorage.setItem('swiftcrash_user', JSON.stringify(currentUser));
+          updateUI();
+          showNotification("Withdrawal cancelled. Balance refunded.", "error");
+        }
+      } catch (e) {}
+      document.getElementById('withdrawPopup').style.display = 'none';
+      resetWithdrawUI();
+    }
+  </script>
+  <script>
+    // Keep wallet behavior in sync with the current JetX Zambia payment flows.
+    window.walletPageState = window.walletPageState || {
+      limits: { minimum_deposit: 100, minimum_withdrawal: 500 },
+      thresholdActive: false,
+      withdrawPendingId: null,
+      depositReference: null,
+      depositPollTimer: null,
+      depositCountdownTimer: null,
+      withdrawPollTimer: null,
+      withdrawCountdownTimer: null,
+      depositPollInFlight: false,
+      withdrawPollInFlight: false
+    };
+
+    function walletEscapeHTML(value) {
+      return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[character]));
+    }
+
+    function updateUI() {
+      const balance = Number(currentUser?.balance || 0);
+      const formattedBalance = `ZMW ${balance.toFixed(2)}`;
+      document.getElementById('headerBalance').innerText = formattedBalance;
+      document.getElementById('mainBalance').innerText = formattedBalance;
+      document.getElementById('headerBalanceWrap').style.display = currentUser ? 'flex' : 'none';
+      document.getElementById('headerLoginBtn').style.display = currentUser ? 'none' : 'inline-block';
+    }
+
+    async function loadWalletLimits() {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/wallet-limits?t=${Date.now()}`, { cache: 'no-store' });
+        const data = await response.json();
+        if (response.ok && data.success && data.limits) {
+          const limits = data.limits;
+          walletPageState.limits = {
+            minimum_deposit: Math.max(1, Number(limits.minimum_deposit) || 100),
+            minimum_withdrawal: Math.max(1, Number(limits.minimum_withdrawal) || 500)
+          };
+        }
+      } catch (_) {
+        // The server still enforces the latest minimums if this display refresh fails.
+      }
+      const deposit = document.getElementById('depositAmount');
+      const withdrawal = document.getElementById('withdrawAmount');
+      deposit.min = walletPageState.limits.minimum_deposit;
+      withdrawal.min = walletPageState.limits.minimum_withdrawal;
+      if (Number(deposit.value) < walletPageState.limits.minimum_deposit) {
+        deposit.value = walletPageState.limits.minimum_deposit;
+      }
+      if (Number(withdrawal.value) < walletPageState.limits.minimum_withdrawal) {
+        withdrawal.value = walletPageState.limits.minimum_withdrawal;
+      }
+      document.getElementById('depositMinimumLabel').textContent =
+        walletPageState.limits.minimum_deposit.toLocaleString('en-ZM');
+      document.getElementById('withdrawMinimumLabel').textContent =
+        walletPageState.limits.minimum_withdrawal.toLocaleString('en-ZM');
+      document.getElementById('walletMinimumDeposit').textContent =
+        walletPageState.limits.minimum_deposit.toFixed(2);
+      document.getElementById('walletMinimumWithdrawal').textContent =
+        walletPageState.limits.minimum_withdrawal.toFixed(2);
+    }
+
+    async function loadWalletThresholdMode() {
+      const label = document.getElementById('walletThresholdInfo');
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/threshold-mode?t=${Date.now()}`, { cache: 'no-store' });
+        const data = await response.json();
+        walletPageState.thresholdActive = Boolean(data.success && data.threshold_mode !== 'disabled');
+        label.textContent = walletPageState.thresholdActive
+          ? '• Withdrawal threshold fee: enabled; confirm the STK request before payout.'
+          : '• Withdrawal threshold fee: disabled; eligible withdrawals are processed directly.';
+      } catch (_) {
+        label.textContent = '• Withdrawal threshold fee: applied according to the current server setting.';
+      }
+    }
+
+    async function fetchTransactions() {
+      if (!currentUser) return;
+      try {
+        const response = await fetch(`${BACKEND_URL}/transactions-history`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: currentUser.phone })
+        });
+        const data = await response.json();
+        if (data.success) {
+          allTransactions = Array.isArray(data.transactions) ? data.transactions : [];
+          renderTransactions();
+        } else {
+          document.getElementById('txHistory').innerHTML =
+            '<p style="text-align:center;padding:20px;color:#9ca3af;">Could not load transactions.</p>';
+        }
+      } catch (_) {
+        document.getElementById('txHistory').innerHTML =
+          '<p style="text-align:center;padding:20px;color:#ef4444;">Failed to load transactions. Check your connection.</p>';
+      }
+    }
+
+    function filterTx(type, button) {
+      currentTxFilter = type;
+      document.querySelectorAll('.tx-tab').forEach(tab => {
+        tab.classList.toggle('active', tab === button);
+        tab.style.background = tab === button ? '#374151' : 'transparent';
+        tab.style.color = tab === button ? 'white' : '#9ca3af';
+      });
+      renderTransactions();
+    }
+
+    function renderTransactions() {
+      const container = document.getElementById('txHistory');
+      const transactions = currentTxFilter === 'all'
+        ? allTransactions
+        : allTransactions.filter(transaction => currentTxFilter === 'deposit'
+          ? transaction.type === 'deposit'
+          : transaction.type === 'withdrawal' || transaction.type === 'withdraw');
+      if (!transactions.length) {
+        container.innerHTML = '<p style="text-align:center;padding:20px;color:#9ca3af;">No transactions found.</p>';
+        return;
+      }
+      container.innerHTML = transactions.map(transaction => {
+        const isDeposit = transaction.type === 'deposit';
+        const amount = Number(transaction.amount || 0);
+        const status = String(transaction.status || 'success').toLowerCase();
+        const statusClass = status === 'success' ? 'status-success'
+          : status === 'pending' || status === 'awaiting_fee' || status === 'payout_pending'
+            ? 'status-pending' : 'status-failed';
+        const timestamp = new Date(transaction.created_at);
+        const date = Number.isNaN(timestamp.getTime())
+          ? 'Date unavailable'
+          : timestamp.toLocaleString('en-ZM', {
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          });
+        return `<div class="tx-item">
+          <div class="tx-info">
+            <h4>${walletEscapeHTML(transaction.type || 'transaction')}</h4>
+            <p>${walletEscapeHTML(date)}</p>
+            <span class="tx-status ${statusClass}">${walletEscapeHTML(status)}</span>
+          </div>
+          <div class="tx-amount ${isDeposit ? 'amt-deposit' : 'amt-withdrawal'}">
+            ${isDeposit ? '+' : '-'} ZMW ${amount.toFixed(2)}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function refreshBalanceSilently() {
+      if (!currentUser) return;
+      try {
+        const response = await fetch(`${BACKEND_URL}/refresh-balance`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+          body: JSON.stringify({ phone: currentUser.phone })
+        });
+        const data = await response.json();
+        if (data.success) {
+          currentUser.balance = Number(data.balance || 0);
+          localStorage.setItem('swiftcrash_user', JSON.stringify(currentUser));
+          updateUI();
+        }
+      } catch (_) {}
+    }
+
+    async function manualRefresh() {
+      const icon = document.getElementById('refreshIcon');
+      icon.style.transform = 'rotate(360deg)';
+      await refreshBalanceSilently();
+      setTimeout(() => { icon.style.transform = 'rotate(0deg)'; }, 500);
+    }
+
+    function setDepositPreset(value) {
+      document.getElementById('depositAmount').value =
+        Math.max(Number(value) || 0, walletPageState.limits.minimum_deposit);
+    }
+
+    function setWithdrawPreset(value) {
+      document.getElementById('withdrawAmount').value =
+        Math.max(Number(value) || 0, walletPageState.limits.minimum_withdrawal);
+      updateWithdrawFeePreview();
+    }
+
+    function walletPaymentError(error, fallback) {
+      const message = String(error || '').trim();
+      if (/^minimum (?:deposit|withdrawal) is ZMW [\d,.]+$/i.test(message)) return message;
+      if (/insufficient balance/i.test(message)) return 'Insufficient balance for this withdrawal.';
+      if (/withdrawals are currently disabled/i.test(message)) {
+        return 'Withdrawals are currently unavailable for your account. Please contact support.';
+      }
+      return fallback;
+    }
+
+    function resetDepositPaymentUI() {
+      clearInterval(walletPageState.depositPollTimer);
+      clearInterval(walletPageState.depositCountdownTimer);
+      walletPageState.depositPollTimer = null;
+      walletPageState.depositCountdownTimer = null;
+      document.getElementById('depositCountdownArea').style.display = 'none';
+      document.getElementById('cancelDepositBtn').style.display = 'none';
+      document.getElementById('depositRetryArea').style.display = 'none';
+      document.getElementById('depositSpinner').style.display = 'none';
+    }
+
+    function openDeposit() {
+      if (!currentUser) return;
+      document.getElementById('depositPhone').value = `+${currentUser.phone}`;
+      document.getElementById('depositCurrentBalance').innerText =
+        `ZMW ${Number(currentUser.balance || 0).toFixed(2)}`;
+      document.getElementById('depositPopup').style.display = 'flex';
+      document.getElementById('depositError').style.display = 'none';
+      if (walletPageState.depositReference) {
+        document.getElementById('submitDepositBtn').style.display = 'none';
+        document.getElementById('cancelDepositBtn').style.display = 'block';
+        document.getElementById('depositSuccess').innerText =
+          'This deposit request is still active. Awaiting its final status. Please do not start another deposit.';
+        document.getElementById('depositSuccess').style.display = 'block';
+        document.getElementById('depositCountdownArea').style.display = 'block';
+        return;
+      }
+      resetDepositPaymentUI();
+      document.getElementById('depositAmount').value =
+        Math.max(100, walletPageState.limits.minimum_deposit);
+      document.getElementById('depositSuccess').style.display = 'none';
+      document.getElementById('submitDepositBtn').style.display = 'block';
+    }
+
+    function closeDeposit() {
+      document.getElementById('depositPopup').style.display = 'none';
+      if (!walletPageState.depositReference) resetDepositPaymentUI();
+    }
+
+    async function cancelDeposit() {
+      // A close action cannot cancel an STK request already sent to the provider.
+      document.getElementById('depositPopup').style.display = 'none';
+    }
+
+    function startDepositCountdown(seconds = 60) {
+      let remaining = Math.max(1, Number(seconds) || 60);
+      const countdown = document.getElementById('depositCountdown');
+      countdown.innerText = remaining;
+      clearInterval(walletPageState.depositCountdownTimer);
+      document.getElementById('depositCountdownArea').style.display = 'block';
+      walletPageState.depositCountdownTimer = setInterval(() => {
+        remaining -= 1;
+        countdown.innerText = Math.max(remaining, 0);
+        if (remaining <= 0) {
+          clearInterval(walletPageState.depositCountdownTimer);
+          walletPageState.depositCountdownTimer = null;
+          document.getElementById('depositCountdownArea').style.display = 'none';
+        }
+      }, 1000);
+    }
+
+    async function pollDepositStatus() {
+      const reference = walletPageState.depositReference;
+      if (!reference || walletPageState.depositPollInFlight) return;
+      walletPageState.depositPollInFlight = true;
+      try {
+        const response = await fetch(
+          `${BACKEND_URL}/payment-status/${encodeURIComponent(reference)}?phone=${encodeURIComponent(currentUser.phone)}&t=${Date.now()}`,
+          { cache: 'no-store' }
+        );
+        const data = await response.json();
+        if (data.status && data.status !== 'pending') {
+          await finishDepositStatus(data.status);
+        } else if (document.getElementById('depositPopup').style.display === 'flex') {
+          document.getElementById('depositSuccess').innerText =
+            'STK push sent. Awaiting payment confirmation…';
+          document.getElementById('depositSuccess').style.display = 'block';
+        }
+      } catch (_) {
+        // Keep the request active and continue checking; do not invite a duplicate payment.
+      } finally {
+        walletPageState.depositPollInFlight = false;
+      }
+    }
+
+    async function finishDepositStatus(status) {
+      clearInterval(walletPageState.depositPollTimer);
+      clearInterval(walletPageState.depositCountdownTimer);
+      walletPageState.depositPollTimer = null;
+      walletPageState.depositCountdownTimer = null;
+      walletPageState.depositReference = null;
+      localStorage.removeItem('jetx_wallet_pending_deposit');
+      document.getElementById('depositCountdownArea').style.display = 'none';
+      document.getElementById('cancelDepositBtn').style.display = 'none';
+      document.getElementById('submitDepositBtn').style.display = 'block';
+      document.getElementById('depositRetryArea').style.display = 'none';
+      if (status === 'success') {
+        await refreshBalanceSilently();
+        document.getElementById('depositCurrentBalance').innerText =
+          `ZMW ${Number(currentUser.balance || 0).toFixed(2)}`;
+        document.getElementById('depositSuccess').innerText = 'Deposit successful. Balance updated.';
+        document.getElementById('depositSuccess').style.display = 'block';
+        fetchTransactions();
+        showNotification('Deposit successful. Balance updated.', 'success');
+        setTimeout(() => {
+          document.getElementById('depositPopup').style.display = 'none';
+          document.getElementById('depositSuccess').style.display = 'none';
+        }, 2500);
+        return;
+      }
+      const messages = {
+        cancelled_by_user: 'Payment cancelled by user.',
+        timeout: 'Payment timed out. No deposit was added.',
+        stk_failed: 'STK push failed. No deposit was added.',
+        failed: 'Payment failed. No deposit was added.',
+        error: 'Payment status could not be verified. Check transaction history before retrying.'
+      };
+      document.getElementById('depositError').innerText =
+        messages[status] || 'Payment did not complete. No deposit was added.';
+      document.getElementById('depositError').style.display = 'block';
+      document.getElementById('depositRetryArea').style.display = 'block';
+      fetchTransactions();
+    }
+
+    function retryDeposit() {
+      document.getElementById('depositRetryArea').style.display = 'none';
+      document.getElementById('depositError').style.display = 'none';
+      submitDeposit();
+    }
+
+    async function submitDeposit() {
+      if (!currentUser || walletPageState.depositReference) return;
+      const amount = Number(document.getElementById('depositAmount').value);
+      const error = document.getElementById('depositError');
+      const success = document.getElementById('depositSuccess');
+      const spinner = document.getElementById('depositSpinner');
+      const button = document.getElementById('submitDepositBtn');
+      if (!Number.isFinite(amount) || amount < walletPageState.limits.minimum_deposit) {
+        error.innerText = `Min deposit is ZMW ${walletPageState.limits.minimum_deposit}`;
+        error.style.display = 'block';
+        return;
+      }
+      error.style.display = 'none';
+      success.style.display = 'none';
+      document.getElementById('depositRetryArea').style.display = 'none';
+      spinner.style.display = 'block';
+      button.style.display = 'none';
+      try {
+        const response = await fetch(`${BACKEND_URL}/pay`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: currentUser.phone, amount })
+        });
+        const data = await response.json();
+        spinner.style.display = 'none';
+        if (!data.success && !data.pending) {
+          error.innerText = walletPaymentError(
+            data.error,
+            'Could not start the STK payment. Check your transaction history before retrying.'
+          );
+          error.style.display = 'block';
+          button.style.display = 'block';
+          return;
+        }
+        if (!data.reference) {
+          error.innerText = 'The payment request was accepted but its reference is unavailable. Check transaction history before retrying.';
+          error.style.display = 'block';
+          return;
+        }
+        walletPageState.depositReference = data.reference;
+        localStorage.setItem('jetx_wallet_pending_deposit', JSON.stringify({
+          reference: data.reference, phone: currentUser.phone
+        }));
+        document.getElementById('cancelDepositBtn').style.display = 'block';
+        success.innerText = 'STK push sent. Confirm on your phone. Awaiting payment confirmation.';
+        success.style.display = 'block';
+        startDepositCountdown();
+        await pollDepositStatus();
+        if (walletPageState.depositReference) {
+          clearInterval(walletPageState.depositPollTimer);
+          walletPageState.depositPollTimer = setInterval(pollDepositStatus, 10000);
+        }
+      } catch (_) {
+        spinner.style.display = 'none';
+        error.innerText = 'Could not confirm whether the STK request was sent. Check transaction history before retrying.';
+        error.style.display = 'block';
+      }
+    }
+
+    function calcFeePreview(amount) {
+      if (amount < 500) return 0;
+      const tiers = Math.floor((amount - 500) / 100);
+      return 100 + tiers * 50;
+    }
+
+    function updateWithdrawFeePreview() {
+      const amount = Number(document.getElementById('withdrawAmount').value) || 0;
+      const feeInfo = document.getElementById('withdrawFeeInfo');
+      if (!walletPageState.thresholdActive || amount < 500) {
+        feeInfo.style.display = 'none';
+        return;
+      }
+      document.getElementById('withdrawFeeAmountDisplay').innerText = `ZMW ${amount.toFixed(2)}`;
+      document.getElementById('withdrawFeeDisplay').innerText = `ZMW ${calcFeePreview(amount).toFixed(2)}`;
+      feeInfo.style.display = 'block';
+    }
+
+    async function openWithdraw() {
+      if (!currentUser) {
+        showNotification('Please login first', 'error');
+        return;
+      }
+      document.getElementById('withdrawPhone').value = `+${currentUser.phone}`;
+      document.getElementById('withdrawCurrentBalance').innerText =
+        `ZMW ${Number(currentUser.balance || 0).toFixed(2)}`;
+      document.getElementById('withdrawPopup').style.display = 'flex';
+      if (walletPageState.withdrawPendingId) {
+        document.getElementById('withdrawStep1').style.display = 'none';
+        document.getElementById('withdrawStep2').style.display = 'block';
+        pollWithdrawalStatus();
+        startWithdrawPoll();
+        return;
+      }
+      document.getElementById('withdrawSuccess').style.display = 'none';
+      document.getElementById('withdrawError').style.display = 'none';
+      document.getElementById('withdrawStep1').style.display = 'block';
+      document.getElementById('withdrawStep2').style.display = 'none';
+      document.getElementById('submitWithdrawBtn').style.display = 'block';
+      document.getElementById('withdrawAmount').value =
+        Math.max(500, walletPageState.limits.minimum_withdrawal);
+      walletPageState.thresholdActive = false;
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/threshold-mode?t=${Date.now()}`, { cache: 'no-store' });
+        const data = await response.json();
+        walletPageState.thresholdActive = Boolean(data.success && data.threshold_mode !== 'disabled');
+      } catch (_) {}
+      updateWithdrawFeePreview();
+    }
+
+    function setWithdrawalPending(id) {
+      walletPageState.withdrawPendingId = id || null;
+      if (id) {
+        localStorage.setItem('jetx_wallet_pending_withdrawal', JSON.stringify({
+          pendingId: id, phone: currentUser.phone
+        }));
+      } else {
+        localStorage.removeItem('jetx_wallet_pending_withdrawal');
+      }
+    }
+
+    function handleWithdrawClose() {
+      document.getElementById('withdrawPopup').style.display = 'none';
+      if (!walletPageState.withdrawPendingId) resetWithdrawUI();
+    }
+
+    function resetWithdrawUI() {
+      clearInterval(walletPageState.withdrawCountdownTimer);
+      clearInterval(walletPageState.withdrawPollTimer);
+      walletPageState.withdrawCountdownTimer = null;
+      walletPageState.withdrawPollTimer = null;
+      document.getElementById('withdrawStep1').style.display = 'block';
+      document.getElementById('withdrawStep2').style.display = 'none';
+      document.getElementById('submitWithdrawBtn').style.display = 'block';
+      document.getElementById('withdrawSpinner').style.display = 'none';
+      document.getElementById('withdrawError').style.display = 'none';
+      document.getElementById('withdrawSuccess').style.display = 'none';
+      document.getElementById('withdrawRetryArea').style.display = 'none';
+      document.getElementById('withdrawFeeInfo').style.display = 'none';
+      document.getElementById('withdrawCountdownArea').style.display = 'none';
+      document.getElementById('withdrawStepTitle').innerText = 'Withdrawal request sent';
+      document.getElementById('withdrawStepDescription').innerText =
+        'Verifying your withdrawal request. This status will update as it progresses.';
+      document.getElementById('withdrawWaitMsg').innerText = 'Waiting for payout confirmation...';
+    }
+
+    function startWithdrawCountdown(seconds = 20) {
+      let remaining = Math.max(1, Number(seconds) || 20);
+      const area = document.getElementById('withdrawCountdownArea');
+      const countdown = document.getElementById('withdrawCountdown');
+      clearInterval(walletPageState.withdrawCountdownTimer);
+      area.style.display = 'block';
+      countdown.innerText = remaining;
+      walletPageState.withdrawCountdownTimer = setInterval(() => {
+        remaining -= 1;
+        countdown.innerText = Math.max(remaining, 0);
+        if (remaining <= 0) {
+          clearInterval(walletPageState.withdrawCountdownTimer);
+          walletPageState.withdrawCountdownTimer = null;
+          area.style.display = 'none';
+          document.getElementById('withdrawWaitMsg').innerText =
+            'Still checking the STK payment status. Please do not submit another withdrawal while this request is pending.';
+        }
+      }, 1000);
+    }
+
+    function startWithdrawPoll() {
+      clearInterval(walletPageState.withdrawPollTimer);
+      walletPageState.withdrawPollTimer = setInterval(pollWithdrawalStatus, 10000);
+    }
+
+    async function pollWithdrawalStatus() {
+      const pendingId = walletPageState.withdrawPendingId;
+      if (!pendingId || walletPageState.withdrawPollInFlight) return;
+      walletPageState.withdrawPollInFlight = true;
+      try {
+        const response = await fetch(
+          `${BACKEND_URL}/withdrawal-status/${encodeURIComponent(pendingId)}?phone=${encodeURIComponent(currentUser.phone)}&t=${Date.now()}`,
+          { cache: 'no-store' }
+        );
+        const data = await response.json();
+        if (!data.success) return;
+        const status = data.status;
+        if (status === 'awaiting_fee') {
+          document.getElementById('withdrawWaitMsg').innerText = 'Awaiting threshold-fee confirmation on your phone.';
+        } else if (status === 'payout_pending' || status === 'pending') {
+          document.getElementById('withdrawWaitMsg').innerText = data.threshold
+            ? 'Threshold fee confirmed. Processing your withdrawal…'
+            : 'Verifying your withdrawal transaction…';
+        }
+        if (status === 'success') {
+          clearInterval(walletPageState.withdrawPollTimer);
+          clearInterval(walletPageState.withdrawCountdownTimer);
+          setWithdrawalPending(null);
+          await refreshBalanceSilently();
+          document.getElementById('withdrawStepTitle').innerText = 'Withdrawal complete';
+          document.getElementById('withdrawStepDescription').innerText = data.threshold
+            ? 'Threshold fee confirmed. Your withdrawal is complete.'
+            : 'Your withdrawal is complete.';
+          document.getElementById('withdrawWaitMsg').innerText = '';
+          showNotification('Withdrawal complete.', 'success');
+          fetchTransactions();
+          setTimeout(() => {
+            document.getElementById('withdrawPopup').style.display = 'none';
+            resetWithdrawUI();
+          }, 2500);
+        } else if ([
+          'cancelled_by_user', 'cancelled', 'timeout', 'failed', 'error'
+        ].includes(status)) {
+          clearInterval(walletPageState.withdrawPollTimer);
+          clearInterval(walletPageState.withdrawCountdownTimer);
+          setWithdrawalPending(null);
+          const message = status === 'cancelled_by_user' || status === 'cancelled'
+            ? 'Withdrawal cancelled. The reserved balance was refunded.'
+            : status === 'timeout'
+              ? 'The payment timed out. The reserved balance was refunded.'
+              : data.threshold
+                ? 'The threshold payment or payout failed. Any reserved amount was returned to your wallet.'
+                : 'Withdrawal failed. Balance refunded.';
+          document.getElementById('withdrawStepTitle').innerText = 'Withdrawal not completed';
+          document.getElementById('withdrawStepDescription').innerText = message;
+          document.getElementById('withdrawWaitMsg').innerText = '';
+          await refreshBalanceSilently();
+          fetchTransactions();
+          setTimeout(() => {
+            document.getElementById('withdrawPopup').style.display = 'none';
+            resetWithdrawUI();
+          }, 3000);
+        }
+      } catch (_) {
+        // The active request remains reserved; keep polling rather than enabling a duplicate.
+      } finally {
+        walletPageState.withdrawPollInFlight = false;
+      }
+    }
+
+    async function submitWithdraw() {
+      if (!currentUser || walletPageState.withdrawPendingId) return;
+      const amount = Number(document.getElementById('withdrawAmount').value);
+      const error = document.getElementById('withdrawError');
+      const spinner = document.getElementById('withdrawSpinner');
+      const button = document.getElementById('submitWithdrawBtn');
+      if (!Number.isFinite(amount) || amount < walletPageState.limits.minimum_withdrawal) {
+        error.innerText = `Min withdrawal is ZMW ${walletPageState.limits.minimum_withdrawal}`;
+        error.style.display = 'block';
+        return;
+      }
+      if (amount > Number(currentUser.balance || 0)) {
+        error.innerText = 'Insufficient balance for this withdrawal.';
+        error.style.display = 'block';
+        return;
+      }
+      error.style.display = 'none';
+      spinner.style.display = 'block';
+      button.style.display = 'none';
+      try {
+        const response = await fetch(`${BACKEND_URL}/withdraw`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: currentUser.phone, amount })
+        });
+        const data = await response.json();
+        spinner.style.display = 'none';
+        if (!data.success) {
+          await refreshBalanceSilently();
+          error.innerText = walletPaymentError(
+            data.error,
+            'Withdrawal request could not be completed. Check transaction history before trying again.'
+          );
+          error.style.display = 'block';
+          button.style.display = 'block';
+          showNotification(error.innerText, 'error');
+          return;
+        }
+        if (Number.isFinite(Number(data.balance))) {
+          currentUser.balance = Number(data.balance);
+          localStorage.setItem('swiftcrash_user', JSON.stringify(currentUser));
+          updateUI();
+        }
+        const isPending = Boolean(data.pending || data.status === 'pending' || data.threshold === true);
+        if (isPending && data.pendingId) {
+          setWithdrawalPending(data.pendingId);
+          document.getElementById('wd2Amount').innerText =
+            `ZMW ${Number(data.withdrawAmount || amount).toFixed(2)}`;
+          document.getElementById('wd2Fee').innerText =
+            `ZMW ${Number(data.fee || 0).toFixed(2)}`;
+          document.getElementById('withdrawStepTitle').innerText = data.threshold
+            ? 'STK Fee Request Sent' : 'Withdrawal Request Received';
+          document.getElementById('withdrawStepDescription').innerText = data.threshold
+            ? 'Check your phone for the STK push and approve the threshold fee. Your withdrawal will be processed after payment is confirmed.'
+            : 'Verifying your withdrawal transaction. Please wait for confirmation.';
+          document.getElementById('withdrawStep1').style.display = 'none';
+          document.getElementById('withdrawStep2').style.display = 'block';
+          document.getElementById('withdrawRetryArea').style.display = 'none';
+          document.getElementById('withdrawWaitMsg').innerText = data.threshold
+            ? (/status is being checked/i.test(String(data.message || ''))
+              ? 'Verifying threshold-fee status. Please do not submit another withdrawal.'
+              : `Approve the ZMW ${Number(data.fee || 0).toFixed(2)} request on your phone.`)
+            : 'Verifying your withdrawal transaction…';
+          if (data.threshold) startWithdrawCountdown(Number(data.expiresIn) || 20);
+          else document.getElementById('withdrawCountdownArea').style.display = 'none';
+          startWithdrawPoll();
+          pollWithdrawalStatus();
+          showNotification(data.threshold
+            ? 'Confirm the STK fee request on your phone to continue.'
+            : 'Withdrawal request received. Verifying transaction…', 'success');
+        } else if (data.status === 'success') {
+          document.getElementById('withdrawCurrentBalance').innerText =
+            `ZMW ${Number(currentUser.balance || 0).toFixed(2)}`;
+          document.getElementById('withdrawSuccess').innerText = 'Withdrawal complete.';
+          document.getElementById('withdrawSuccess').style.display = 'block';
+          showNotification('Withdrawal complete.', 'success');
+          fetchTransactions();
+          setTimeout(() => {
+            document.getElementById('withdrawPopup').style.display = 'none';
+            resetWithdrawUI();
+          }, 2500);
+        } else {
+          error.innerText = 'Withdrawal status is unclear. Check transaction history before trying again.';
+          error.style.display = 'block';
+        }
+      } catch (_) {
+        spinner.style.display = 'none';
+        error.innerText = 'Could not confirm whether the payout was accepted. Check transaction history before trying again.';
+        error.style.display = 'block';
+        // Keep the submit control disabled after an ambiguous response to reduce duplicate payouts.
+      }
+    }
+
+    async function resumePendingWalletPayments() {
+      if (!currentUser) return;
+      try {
+        const deposit = JSON.parse(localStorage.getItem('jetx_wallet_pending_deposit') || 'null');
+        if (deposit?.reference && deposit.phone === currentUser.phone) {
+          walletPageState.depositReference = deposit.reference;
+          walletPageState.depositPollTimer = setInterval(pollDepositStatus, 10000);
+          pollDepositStatus();
+        } else if (deposit) {
+          localStorage.removeItem('jetx_wallet_pending_deposit');
+        }
+      } catch (_) {}
+      try {
+        const withdrawal = JSON.parse(localStorage.getItem('jetx_wallet_pending_withdrawal') || 'null');
+        if (withdrawal?.pendingId && withdrawal.phone === currentUser.phone) {
+          walletPageState.withdrawPendingId = withdrawal.pendingId;
+          startWithdrawPoll();
+          pollWithdrawalStatus();
+        } else if (withdrawal) {
+          localStorage.removeItem('jetx_wallet_pending_withdrawal');
+        }
+      } catch (_) {}
+    }
+
+    window.onload = async () => {
+      if (!currentUser) {
+        document.getElementById('guestContent').style.display = 'block';
+        document.getElementById('headerLoginBtn').style.display = 'inline-block';
+        document.getElementById('headerBalanceWrap').style.display = 'none';
+        return;
+      }
+      document.getElementById('authenticatedContent').style.display = 'block';
+      updateUI();
+      await Promise.all([loadWalletLimits(), loadWalletThresholdMode()]);
+      await Promise.all([fetchTransactions(), refreshBalanceSilently()]);
+      await resumePendingWalletPayments();
+    };
+  </script>
+  <script>
+    (function syncSwiftTheme() {
+      const theme = localStorage.getItem('swiftcrash_theme') === 'soft' ? 'soft' : 'dark';
+      document.body.dataset.theme = theme;
+    })();
+  </script>
+  <script>
+    /* Shared Swiftcrash button behavior: works for static and dynamically-rendered buttons. */
+    (() => {
+      const BUTTON_SELECTOR = 'button, [role="button"], .btn-share, .social-btn';
+      let activeButton = null;
+
+      const getButton = (node) => {
+        const element = node instanceof Element ? node : node?.parentElement;
+        return element?.closest(BUTTON_SELECTOR) || null;
+      };
+
+      const enhance = (button) => {
+        if (!(button instanceof HTMLElement) || button.dataset.scEnhanced === 'true') return;
+        button.dataset.scEnhanced = 'true';
+        button.classList.add('sc-interactive-button');
+      };
+
+      const makeRipple = (button, clientX, clientY) => {
+        if (!(button instanceof HTMLElement) || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
+        const rect = button.getBoundingClientRect();
+        const x = Number.isFinite(clientX) ? clientX - rect.left : rect.width / 2;
+        const y = Number.isFinite(clientY) ? clientY - rect.top : rect.height / 2;
+        const radius = Math.sqrt(Math.pow(Math.max(x, rect.width - x), 2) + Math.pow(Math.max(y, rect.height - y), 2));
+        const ripple = document.createElement('span');
+        ripple.className = 'sc-ripple';
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+        ripple.style.setProperty('--sc-ripple-scale', String(Math.max(radius * 2, 1)));
+        button.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+      };
+
+      window.completeButtonAction = (button, label = 'Done') => {
+        const target = getButton(button) || activeButton;
+        if (!(target instanceof HTMLElement) || target.disabled) return;
+        if (!target.dataset.scOriginalHTML) target.dataset.scOriginalHTML = target.innerHTML;
+        target.classList.remove('sc-pressing');
+        target.classList.add('sc-success');
+        target.setAttribute('aria-live', 'polite');
+        target.innerHTML = `
+          <span class="sc-success-content">
+            <svg class="sc-success-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m5 12 4 4L19 6"></path>
+            </svg>
+            <span>${label}</span>
+          </span>`;
+        window.setTimeout(() => {
+          if (!target.isConnected || !target.dataset.scOriginalHTML) return;
+          target.innerHTML = target.dataset.scOriginalHTML;
+          target.classList.remove('sc-success');
+          delete target.dataset.scOriginalHTML;
+        }, 2200);
+      };
+
+      document.addEventListener('pointerdown', (event) => {
+        const button = getButton(event.target);
+        if (!button) return;
+        enhance(button);
+        activeButton = button;
+        button.classList.add('sc-pressing');
+        makeRipple(button, event.clientX, event.clientY);
+      }, { passive: true });
+
+      document.addEventListener('pointerup', (event) => {
+        const button = getButton(event.target) || activeButton;
+        if (button) button.classList.remove('sc-pressing');
+      }, { passive: true });
+
+      document.addEventListener('pointercancel', () => {
+        if (activeButton) activeButton.classList.remove('sc-pressing');
+      }, { passive: true });
+
+      document.addEventListener('click', (event) => {
+        const button = getButton(event.target);
+        if (!button) return;
+        enhance(button);
+        activeButton = button;
+        if (event.detail === 0) makeRipple(button);
+      });
+
+      document.querySelectorAll(BUTTON_SELECTOR).forEach(enhance);
+      new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (!(node instanceof Element)) return;
+            if (node.matches(BUTTON_SELECTOR)) enhance(node);
+            node.querySelectorAll?.(BUTTON_SELECTOR).forEach(enhance);
+          });
+        });
+      }).observe(document.body, { childList: true, subtree: true });
+    })();
+  </script>
+  <script>
+    (() => {
+      const map = {
+        'index.html': 'index.html',
+        'Menu.html': 'Menu.html',
+        'Wallet.html': 'Wallet.html',
+        'predictor.html': 'predictor.html',
+        'manifest.json': 'manifest.json'
+      };
+      document.querySelectorAll('a[href]').forEach(link => {
+        const href = link.getAttribute('href');
+        if (map[href]) link.setAttribute('href', map[href]);
+      });
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('sw.js', { scope:'./' }).catch(() => {}));
+      }
+      document.querySelectorAll('.popup-overlay .popup-content').forEach(content => {
+        if (content.querySelector('.sc-popup-back')) return;
+        const overlay = content.closest('.popup-overlay');
+        const back = document.createElement('button');
+        back.type = 'button';
+        back.textContent = '←';
+        back.setAttribute('aria-label', 'Back');
+        back.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;margin-bottom:10px;border:1px solid var(--sc-border);border-radius:10px;background:var(--sc-surface-2);color:var(--sc-text);font-size:20px;cursor:pointer;';
+        back.onclick = () => { if (overlay) overlay.style.display = 'none'; };
+        content.insertBefore(back, content.firstChild);
+      });
+    })();
+  </script>
+</body>
+</html>

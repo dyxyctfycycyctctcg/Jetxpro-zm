@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwiftCrash - My Account / Menu</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #09090b; color: white; font-family: sans-serif; margin: 0; padding-bottom: 80px; }
+    
+    .header { padding: 15px; display: flex; justify-content: flex-start; gap: 15px; align-items: center; border-bottom: 1px solid #1f2937; background: #111827; position: sticky; top: 0; z-index: 100; }
+    .header-btn { background: #1f2937; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .header-logo { width: 38px; height: 38px; object-fit: contain; }
+    .header-title { margin: 0; font-size: 18px; flex: 1; text-align: center; }
+    .notification-bell { display: block; position: relative; cursor: pointer; }
+    .notification-badge { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+    
+    .content { padding: 15px; }
+
+    .card { background: #111827; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #1f2937; }
+    .card-title { font-size: 12px; color: #9ca3af; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
+    
+    .btn-deposit { flex: 1; background: var(--sc-green); color: var(--sc-text); padding: 12px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; font-size: 14px; }
+    .btn-withdraw { flex: 1; background: var(--sc-orange); color: var(--sc-text); padding: 12px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; font-size: 14px; }
+
+    .list-container { background: #111827; border-radius: 12px; border: 1px solid #1f2937; overflow: hidden; margin-bottom: 15px; }
+    .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #1f2937; cursor: pointer; }
+    .list-item:last-child { border-bottom: none; }
+    .list-item-content { display: flex; align-items: center; gap: 15px; font-weight: 500; font-size: 14px; }
+    .list-arrow { color: #9ca3af; }
+
+    .comm-cards { display: flex; gap: 10px; margin-bottom: 15px; }
+    .comm-btn { flex: 1; padding: 15px; border-radius: 12px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; color: white; font-size: 14px; }
+    .comm-whatsapp { background: #22c55e; }
+    .comm-call { background: #111827; border: 1px solid #1f2937; }
+
+    .social-row { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 10px; }
+    .social-btn { flex: 1; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; text-decoration: none; font-weight: bold; font-size: 14px; }
+    .social-ig { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+    .social-fb { background: #1877F2; }
+    .social-x { background: #000; border: 1px solid #333; }
+    .social-tk { background: #000; border: 1px solid #333; }
+    .social-yt { background: #FF0000; }
+
+    .info-row { display: flex; gap: 10px; margin-bottom: 20px; }
+    .info-box { flex: 1; background: #111827; border-radius: 12px; border: 1px solid #1f2937; padding: 15px; }
+    .info-label { font-size: 10px; color: #9ca3af; margin-bottom: 8px; text-transform: uppercase; font-weight: bold; }
+    .info-value { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 14px; }
+    
+    .footer { position: fixed; bottom: 0; width: 100%; background: #111827; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #1f2937; z-index: 10; }
+    .footer a { color: #9ca3af; text-decoration: none; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .footer a.active { color: #facc15; }
+
+    #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none; }
+    .toast-msg { padding: 15px 20px; border-radius: 8px; font-weight: bold; font-size: 14px; text-align: center; color: white; opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); pointer-events: auto; }
+    .toast-msg.show { opacity: 1; transform: translateY(0); }
+    .toast-success { background: linear-gradient(135deg, #16a34a, #22c55e); }
+    .toast-error { background: linear-gradient(135deg, #dc2626, #ef4444); }
+
+    .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+    .popup-content { background: #111827; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; position: relative; max-height: 90vh; overflow-y: auto; border: 1px solid #1f2937; }
+    .popup-close { position: absolute; top: 10px; right: 15px; color: white; cursor: pointer; font-size: 24px; font-weight: bold; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 12px; color: #9ca3af; }
+    .form-control { width: 100%; padding: 10px; background: #111827; border: 1px solid #374151; color: white; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
+    .bet-presets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 15px; }
+    .preset { background: #1f2937; border: none; color: white; padding: 10px 0; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .btn-submit { width: 100%; padding: 12px; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 8px; }
+    .spinner { display: none; position: relative; margin: 10px auto; width: 58px; height: 20px; border: 0; border-radius: 0; background: transparent; animation: none; overflow: visible; }
+    .spinner::before { content: ""; position: absolute; top: 6px; left: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--sc-red); box-shadow: 16px 0 0 var(--sc-red), 32px 0 0 var(--sc-red); animation: dottedLoading 1s ease-in-out infinite; }
+    .inline-dots { display: inline-block; position: relative; width: 24px; height: 10px; margin-left: 5px; vertical-align: middle; }
+    .inline-dots::before { content: ""; position: absolute; top: 3px; left: 0; width: 5px; height: 5px; border-radius: 50%; background: var(--sc-green); box-shadow: 9px 0 0 var(--sc-green), 18px 0 0 var(--sc-green); animation: dottedLoading 1s ease-in-out infinite; }
+    .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 90px; color: var(--sc-muted); font-size: 12px; }
+    .error-msg { color: #ef4444; font-size: 12px; margin-top: 5px; display: none; }
+    .success-msg { color: #22c55e; font-size: 14px; text-align: center; margin-top: 10px; display: none; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes dottedLoading { 0%, 100% { transform: translateY(0); opacity: 0.42; } 50% { transform: translateY(-5px); opacity: 1; } }
+    @keyframes animate-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .animate-bounce { animation: animate-bounce 0.6s ease-in-out; }
+
+    .page-popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #09090b; z-index: 2000; flex-direction: column; overflow-y: auto; }
+    .page-header { padding: 15px; display: flex; align-items: center; border-bottom: 1px solid #1f2937; position: sticky; top: 0; background: #09090b; z-index: 10; gap: 15px; }
+    .page-back-btn { background: #1f2937; border: none; color: white; padding: 10px; border-radius: 8px; cursor: pointer; display: flex; }
+    .page-title { margin: 0; font-size: 18px; flex: 1; text-align: center; }
+    .page-content { padding: 15px; flex: 1; }
+    .tabs-container { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; }
+    .tab-btn { background: #1f2937; color: #9ca3af; border: none; padding: 8px 16px; border-radius: 20px; font-size: 14px; white-space: nowrap; cursor: pointer; }
+    .tab-btn.active { background: #facc15; color: #000; font-weight: bold; }
+    .search-box { background: #111827; border: 1px solid #374151; border-radius: 8px; padding: 10px; width: 100%; color: white; margin-bottom: 15px; box-sizing: border-box; }
+    /* Shared SwiftCrash theme: keep Menu aligned with index and Wallet */
+    :root {
+      --sc-bg: #07080d;
+      --sc-bg-deep: #04050a;
+      --sc-surface: #10131c;
+      --sc-surface-2: #161b28;
+      --sc-surface-3: #1d2433;
+      --sc-border: rgba(148, 163, 184, 0.16);
+      --sc-text: #f8fafc;
+      --sc-muted: #8f9bad;
+       --sc-red: #f0445f;
+       --sc-red-deep: #8f173a;
+      --sc-green: #21d687;
+       --sc-orange: #f0a52b;
+       --sc-orange-deep: #cb6d1e;
+      --sc-gold: #ffc857;
+      --sc-blue: #6b8cff;
+    }
+
+    body[data-theme="soft"] {
+      --sc-bg: #11151d;
+      --sc-bg-deep: #0d1118;
+      --sc-surface: #1a202b;
+      --sc-surface-2: #222a38;
+      --sc-surface-3: #2c3748;
+      --sc-border: rgba(203, 213, 225, 0.2);
+      --sc-muted: #aeb8c7;
+    }
+
+    html, body {
+      background: var(--sc-bg) !important;
+      color: var(--sc-text) !important;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 85% 0%, rgba(240, 68, 95, 0.12), transparent 32rem),
+        radial-gradient(circle at 10% 45%, rgba(107, 140, 255, 0.07), transparent 28rem),
+        var(--sc-bg) !important;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .header,
+    .footer {
+      background: rgba(16, 19, 28, 0.94) !important;
+      border-color: var(--sc-border) !important;
+      backdrop-filter: blur(18px);
+    }
+
+    .header {
+      padding: 14px 16px !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+    }
+
+    .header-btn {
+      background: var(--sc-surface-2) !important;
+      border: 1px solid var(--sc-border) !important;
+      color: var(--sc-text) !important;
+    }
+
+    .header-title {
+      color: var(--sc-text);
+      letter-spacing: -0.03em;
+    }
+
+    .content {
+      padding: 18px 15px 28px !important;
+    }
+
+    .card,
+    .list-container,
+    .info-box,
+    .popup-content {
+      background: var(--sc-surface) !important;
+      border-color: var(--sc-border) !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16);
+    }
+
+    .card {
+      border-radius: 18px !important;
+    }
+
+    .card:first-child {
+      background:
+        radial-gradient(circle at 100% 0%, rgba(240, 68, 95, 0.18), transparent 12rem),
+        linear-gradient(145deg, var(--sc-surface), var(--sc-surface-2)) !important;
+      border-color: rgba(240, 68, 95, 0.24) !important;
+    }
+
+    .card-title,
+    .info-label,
+    .form-group label {
+      color: var(--sc-muted) !important;
+      letter-spacing: 0.09em;
+    }
+
+    .list-item {
+      border-color: var(--sc-border) !important;
+      transition: background 0.2s ease, padding-left 0.2s ease;
+    }
+
+    .list-item:hover {
+      background: var(--sc-surface-2);
+      padding-left: 18px;
+    }
+
+    .list-arrow {
+      color: var(--sc-muted) !important;
+    }
+
+    .comm-call,
+    .social-x,
+    .social-tk,
+    .preset,
+    .form-control,
+    .page-back-btn {
+      background: var(--sc-surface-2) !important;
+      border-color: var(--sc-border) !important;
+      color: var(--sc-text) !important;
+    }
+
+    .btn-deposit {
+      background: linear-gradient(135deg, var(--sc-green), #0eaa71) !important;
+      box-shadow: 0 8px 18px rgba(33, 214, 135, 0.17);
+    }
+
+    .btn-withdraw {
+      background: linear-gradient(135deg, var(--sc-orange), var(--sc-orange-deep)) !important;
+    }
+
+    .footer {
+      padding: 10px 0 12px !important;
+      box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.2);
+    }
+
+    .footer a {
+      color: var(--sc-muted) !important;
+    }
+
+    .footer a.active {
+      color: var(--sc-red) !important;
+    }
+
+    .page-popup {
+      background:
+        radial-gradient(circle at 85% 0%, rgba(240, 68, 95, 0.1), transparent 22rem),
+        var(--sc-bg) !important;
+    }
+
+    .page-header {
+      background: rgba(16, 19, 28, 0.94) !important;
+      border-color: var(--sc-border) !important;
+      backdrop-filter: blur(18px);
+    }
+
+    .popup-overlay {
+      background: rgba(2, 3, 7, 0.78) !important;
+      backdrop-filter: blur(8px);
+    }
+
+    .popup-content {
+      border-radius: 18px !important;
+    }
+
+    [id^="acc-"] {
+      background: var(--sc-surface-2) !important;
+      border-color: var(--sc-border) !important;
+    }
+
+    .search-box {
+      background: var(--sc-bg-deep) !important;
+      border-color: var(--sc-border) !important;
+      color: var(--sc-text) !important;
+    }
+
+    .tab-btn {
+      background: var(--sc-surface-2) !important;
+      color: var(--sc-muted) !important;
+    }
+
+    .tab-btn.active {
+      background: var(--sc-gold) !important;
+      color: #17110a !important;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--sc-muted) !important;
+    }
+
+    @media (min-width: 700px) {
+      body { max-width: 620px; margin: 0 auto; }
+      .footer { max-width: 620px; left: 50%; transform: translateX(-50%); }
+    }
+
+    /* Premium button interaction system */
+    .sc-interactive-button {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      transform: translateZ(0);
+      transition:
+        transform 180ms cubic-bezier(.2, .7, .2, 1),
+        box-shadow 180ms cubic-bezier(.2, .7, .2, 1),
+        filter 180ms ease;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .sc-interactive-button:hover:not(:disabled):not([aria-disabled="true"]) {
+      transform: translateY(-1px) translateZ(0);
+      filter: brightness(1.035);
+      box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.18),
+        0 0 18px rgba(107, 140, 255, 0.12);
+    }
+
+    .sc-interactive-button:active:not(:disabled):not([aria-disabled="true"]),
+    .sc-interactive-button.sc-pressing {
+      transform: scale(.98) translateY(0) translateZ(0);
+      transition-duration: 70ms;
+      filter: brightness(.99);
+    }
+
+    .sc-interactive-button:focus {
+      outline: none;
+    }
+
+    .sc-interactive-button:focus-visible {
+      outline: 2px solid rgba(143, 164, 255, 0.92);
+      outline-offset: 3px;
+      box-shadow:
+        0 0 0 5px rgba(107, 140, 255, 0.18),
+        0 8px 20px rgba(0, 0, 0, 0.18);
+    }
+
+    .sc-ripple {
+      position: absolute;
+      z-index: 0;
+      width: 1px;
+      height: 1px;
+      border-radius: 50%;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%) scale(0);
+      animation: sc-ripple-out 520ms cubic-bezier(.2, .7, .2, 1) forwards;
+    }
+
+    .sc-interactive-button > *:not(.sc-ripple) {
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes sc-ripple-out {
+      to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(var(--sc-ripple-scale, 150));
+      }
+    }
+
+    .sc-success-content {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .42em;
+    }
+
+    .sc-success-check {
+      width: 1.15em;
+      height: 1.15em;
+      flex: 0 0 auto;
+      stroke-dasharray: 24;
+      stroke-dashoffset: 24;
+      animation: sc-check-draw 360ms cubic-bezier(.65, 0, .35, 1) 40ms forwards;
+    }
+
+    @keyframes sc-check-draw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sc-interactive-button {
+        transition: box-shadow 120ms ease, filter 120ms ease;
+      }
+
+      .sc-interactive-button:hover:not(:disabled):not([aria-disabled="true"]) {
+        transform: none;
+      }
+
+      .sc-interactive-button:active:not(:disabled):not([aria-disabled="true"]),
+      .sc-interactive-button.sc-pressing {
+        transform: scale(.99);
+      }
+
+      .sc-ripple {
+        animation-duration: 1ms;
+      }
+
+      .sc-success-check {
+        animation: none;
+        stroke-dashoffset: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toast-container"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <button class="header-btn" onclick="window.location.href='index.html'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <img class="header-logo" src="swift.png" alt="SwiftCrash logo">
+    <h2 class="header-title">My Account</h2>
+    <div class="notification-bell" onclick="openNotifications()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="notification-badge" style="display:none;">0</div>
+    </div>
+  </div>
+
+  <div class="content">
+    
+    <!-- Profile Info Card -->
+    <div class="card">
+      <h3 style="margin: 0 0 5px 0; color: #facc15; font-size: 18px;" id="userNameDisplay">Swiftcrash user</h3>
+      <p style="margin: 0 0 15px 0; color: #9ca3af; font-size: 14px;" id="userPhoneDisplay">254700000000</p>
+      
+      <div style="font-size: 12px; color: #9ca3af; margin-bottom: 5px;">Available Balance</div>
+      <div style="font-size: 28px; font-weight: bold; color: #22c55e; margin-bottom: 20px;" id="userBalanceDisplay">KSH 0.00</div>
+      
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-deposit" onclick="openDeposit()">DEPOSIT</button>
+        <button class="btn-withdraw" onclick="openWithdraw()">WITHDRAW</button>
+      </div>
+    </div>
+
+    <!-- Quick Action -->
+    <div class="card-title">Quick Action</div>
+    <div class="list-container">
+      <div class="list-item" onclick="openTransactionHistory()">
+        <div class="list-item-content">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          Transaction history
+        </div>
+        <span class="list-arrow">></span>
+      </div>
+      <div class="list-item" onclick="openMyBets()">
+        <div class="list-item-content">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Users bets
+        </div>
+        <span class="list-arrow">></span>
+      </div>
+      <div class="list-item" onclick="openNotifications()">
+        <div class="list-item-content">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+          Notifications
+        </div>
+        <span class="list-arrow">></span>
+      </div>
+      <div class="list-item" onclick="window.location.href='predictor.html'">
+        <div class="list-item-content">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffc857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5 21 3l-5.5 18-4.2-7.3L3 16.5Z"/><path d="m11.3 13.7 4.2-4.2"/></svg>
+          Premium Predictor
+        </div>
+        <span class="list-arrow">></span>
+      </div>
+      <div class="list-item" onclick="openReferralHistory()">
+        <div class="list-item-content">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Refer and earn
+        </div>
+        <span class="list-arrow">></span>
+      </div>
+      <div class="list-item" onclick="document.getElementById('page-support').style.display='flex'">
+        <div class="list-item-content">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Support
+        </div>
+        <span class="list-arrow">></span>
+      </div>
+      <div class="list-item" onclick="document.getElementById('page-password').style.display='flex'">
+        <div class="list-item-content">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Change password
+        </div>
+        <span class="list-arrow">></span>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 20px;">
+      <h3 style="color: #22c55e; font-size: 24px; margin: 0 0 5px 0;">Swiftcrash</h3>
+      <p style="color: #9ca3af; font-size: 12px; margin: 0;">Kenya's #1 Betting Platform</p>
+    </div>
+
+    <!-- Communication Cards -->
+    <div class="comm-cards">
+      <a href="https://wa.me/254723308753" class="comm-btn comm-whatsapp">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/></svg>
+        WhatsApp
+      </a>
+      <a href="tel:254723308753" class="comm-btn comm-call">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Call Us
+      </a>
+    </div>
+
+    <!-- Accordion Menus -->
+    <div class="list-container">
+      <div class="list-item" onclick="toggleAccordion('acc-products')">
+        <div class="list-item-content">Products</div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div id="acc-products" style="display:none; padding: 15px; background: #1f2937; border-bottom: 1px solid #374151;">
+        <a href="index.html" style="color: white; text-decoration: none; display: block; padding: 5px 0;">Aviator</a>
+        <a href="predictor.html" style="color: #ffc857; text-decoration: none; display: block; padding: 5px 0;">Premium Predictor</a>
+      </div>
+
+      <div class="list-item" onclick="toggleAccordion('acc-support')">
+        <div class="list-item-content">Support</div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div id="acc-support" style="display:none; padding: 15px; background: #1f2937; border-bottom: 1px solid #374151;">
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; color: #9ca3af;"><span>Hotline</span><a href="tel:0715979797" style="color: white; text-decoration: none; font-weight: bold;">0715 979 797</a></div>
+        <div style="display: flex; justify-content: space-between; padding: 5px 0; color: #9ca3af;"><span>Email</span><a href="mailto:support@swiftcrash.com" style="color: white; text-decoration: none; font-weight: bold;">support@swiftcrash.com</a></div>
+      </div>
+
+      <div class="list-item" onclick="toggleAccordion('acc-info')">
+        <div class="list-item-content">Info</div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div id="acc-info" style="display:none; padding: 15px; background: #1f2937; border-bottom: 1px solid #374151;">
+        <div style="padding: 5px 0; color: #9ca3af; cursor: pointer;" onclick="document.getElementById('page-terms').style.display='flex'">Terms &amp; Conditions</div>
+        <div style="padding: 5px 0; color: #9ca3af; cursor: pointer;" onclick="document.getElementById('page-privacy').style.display='flex'">Privacy Policy</div>
+        <div style="padding: 5px 0; color: #9ca3af; cursor: pointer;" onclick="document.getElementById('page-responsible').style.display='flex'">Responsible Gaming</div>
+      </div>
+
+      <div class="list-item" onclick="toggleAccordion('acc-18')">
+        <div class="list-item-content">18+ Only</div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      <div id="acc-18" style="display:none; padding: 15px; background: #1f2937;">
+        <div style="color: #9ca3af; font-size: 14px;">You must be 18+ to play. Gamble responsibly.</div>
+      </div>
+    </div>
+
+    <!-- Social Media -->
+    <div class="social-row">
+      <a href="https://instagram.com/" target="_blank" class="social-btn social-ig"><i class="fab fa-instagram fa-lg"></i></a>
+      <a href="https://facebook.com/" target="_blank" class="social-btn social-fb"><i class="fab fa-facebook-f fa-lg"></i></a>
+      <a href="https://x.com/" target="_blank" class="social-btn social-x"><i class="fa-brands fa-x-twitter fa-lg"></i></a>
+      <a href="https://tiktok.com/" target="_blank" class="social-btn social-tk"><i class="fab fa-tiktok fa-lg"></i></a>
+      <a href="https://youtube.com/" target="_blank" class="social-btn social-yt"><i class="fab fa-youtube fa-lg"></i></a>
+    </div>
+
+    <!-- Info Boxes -->
+    <div class="info-row">
+      <div class="info-box">
+        <div class="info-label">Pay With</div>
+        <div class="info-value" style="color: #22c55e;">
+          <span style="background: white; color: black; padding: 3px 6px; border-radius: 4px; font-size: 10px;">M-PESA</span>
+          562424
+        </div>
+      </div>
+      <div class="info-box">
+        <div class="info-label">Age Limit</div>
+        <div class="info-value" style="color: #ef4444;">
+          <span style="background: #ef4444; color: white; padding: 3px 6px; border-radius: 4px; font-size: 10px;">18+</span>
+          Adults Only
+        </div>
+      </div>
+    </div>
+
+    <!-- Legal Text -->
+    <div style="text-align: center; font-size: 11px; color: #9ca3af; margin-bottom: 30px;">
+      <h4 style="color: white; margin-bottom: 8px; font-size: 14px;">License</h4>
+      <p style="line-height: 1.5;">Swiftcrash is licensed by the Betting Control and Licensing Board of Kenya (BCLB) under the Betting, Lotteries and Gaming Act, 1966, and any regulations made thereunder under License Numbers: BK-0001132 and PG-0001386.</p>
+      <h4 style="color: white; margin-bottom: 8px; margin-top: 20px; font-size: 14px;">Responsible Gaming Policy</h4>
+      <p style="line-height: 1.5;">This is a real-money gambling app. Please gamble responsibly and only bet what you can afford. For gambling addiction help and support, please contact us at <a href="tel:0715979797" style="color: #22c55e; text-decoration: none; font-weight: bold;">0715 979 797</a> or visit <a href="http://www.responsiblegambling.or.ke" style="color: #22c55e; text-decoration: none; font-weight: bold;">www.responsiblegambling.or.ke</a>.</p>
+      <p style="margin-top: 20px;">© 2026 Swiftcrash Kenya</p>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="card-title">Danger Zone</div>
+    <div class="list-container">
+      <div class="list-item" onclick="openDeleteAccount()" style="padding: 15px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <div style="background: rgba(239, 68, 68, 0.15); padding: 10px; border-radius: 8px; color: #ef4444; display: flex;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          </div>
+          <div>
+            <div style="color: #ef4444; font-weight: bold; margin-bottom: 4px; font-size: 14px;">Delete Account</div>
+            <div style="color: #9ca3af; font-size: 12px;">Permanently remove your data</div>
+          </div>
+        </div>
+        <span style="color: #ef4444;">></span>
+      </div>
+    </div>
+
+    <button style="width: 100%; background: #111827; border: 1px solid #1f2937; color: white; padding: 15px; border-radius: 12px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 10px; cursor: pointer; font-size: 14px;" onclick="signOut()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+
+  <div class="footer">
+    <a href="index.html">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 2px;" aria-hidden="true"><path d="M4 18.5 8.5 14l3 2.5L20 8"/><path d="M14.5 8H20v5.5"/><path d="M4 21h16"/></svg>
+      Game
+    </a>
+    <a href="Wallet.html">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 2px;" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="M4 7h14"/><path d="M20 9h-4a2 2 0 0 0 0 4h4"/><circle cx="16" cy="11" r=".6" fill="currentColor"/></svg>
+      Wallet
+    </a>
+    <a href="index.html">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 2px;" aria-hidden="true"><path d="M5 13v-1a7 7 0 0 1 14 0v1"/><path d="M5 13H4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2v-4Z"/><path d="M19 13h1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2v-4Z"/><path d="M18 18c-.8 1.3-2.2 2-4 2h-1"/><circle cx="12" cy="20" r=".8" fill="currentColor"/></svg>
+      Chat
+    </a>
+    <a href="Menu.html" class="active">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 2px;" aria-hidden="true"><path d="M4 6h7"/><path d="M16 6h4"/><path d="M4 12h3"/><path d="M12 12h8"/><path d="M4 18h8"/><path d="M17 18h3"/><circle cx="14" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="18" r="2"/></svg>
+      Menu
+    </a>
+  </div>
+
+  <!-- ===== DEPOSIT POPUP ===== -->
+  <div class="popup-overlay" id="depositPopup">
+    <div class="popup-content">
+      <span class="popup-close" onclick="document.getElementById('depositPopup').style.display='none'">×</span>
+      <h2 style="margin-top:0;">Deposit via M-Pesa</h2>
+      <div class="form-group">
+        <label>M-Pesa Number</label>
+        <input type="text" class="form-control" id="depositPhone" readonly style="color:#9ca3af; background:#1f2937;">
+      </div>
+      <div class="form-group">
+        <label>Amount (Min KSH 100)</label>
+        <input type="number" class="form-control" id="depositAmount" value="100" min="100">
+      </div>
+      <div class="bet-presets">
+        <button class="preset" onclick="document.getElementById('depositAmount').value=100">100</button>
+        <button class="preset" onclick="document.getElementById('depositAmount').value=200">200</button>
+        <button class="preset" onclick="document.getElementById('depositAmount').value=500">500</button>
+        <button class="preset" onclick="document.getElementById('depositAmount').value=1000">1K</button>
+        <button class="preset" onclick="document.getElementById('depositAmount').value=5000">5K</button>
+      </div>
+      <p style="font-size: 14px; color: #9ca3af; text-align:center; margin-bottom: 15px;">Current Balance: <strong id="depositCurrentBalance" style="color:white;">KSH 0.00</strong></p>
+      <div class="error-msg" id="depositError"></div>
+      <div class="success-msg" id="depositSuccess"></div>
+      <div class="spinner" id="depositSpinner"></div>
+      <button class="btn-submit" id="submitDepositBtn" style="background:var(--sc-green);" onclick="submitDeposit()">Deposit</button>
+    </div>
+  </div>
+
+  <!-- ===== WITHDRAW POPUP ===== -->
+  <div class="popup-overlay" id="withdrawPopup">
+    <div class="popup-content">
+      <span class="popup-close" id="withdrawCloseBtn" onclick="handleWithdrawClose()">×</span>
+      <h2 style="margin-top:0;">Withdraw to M-Pesa</h2>
+
+      <!-- Step 1: Enter details -->
+      <div id="withdrawStep1">
+        <div class="form-group">
+          <label>M-Pesa Number</label>
+          <input type="text" class="form-control" id="withdrawPhone" readonly style="color:#9ca3af; background:#1f2937;">
+        </div>
+        <div class="form-group">
+          <label>Amount (Min KSH 500)</label>
+          <input type="number" class="form-control" id="withdrawAmount" value="500" min="500" oninput="updateWithdrawFeePreview()">
+        </div>
+        <div class="bet-presets">
+          <button class="preset" onclick="document.getElementById('withdrawAmount').value=500; updateWithdrawFeePreview()">500</button>
+          <button class="preset" onclick="document.getElementById('withdrawAmount').value=1000; updateWithdrawFeePreview()">1K</button>
+          <button class="preset" onclick="document.getElementById('withdrawAmount').value=2000; updateWithdrawFeePreview()">2K</button>
+          <button class="preset" onclick="document.getElementById('withdrawAmount').value=5000; updateWithdrawFeePreview()">5K</button>
+          <button class="preset" onclick="document.getElementById('withdrawAmount').value=10000; updateWithdrawFeePreview()">10K</button>
+        </div>
+        <p style="font-size: 14px; color: #9ca3af; text-align:center;">Current Balance: <strong id="withdrawCurrentBalance" style="color:white;">KSH 0.00</strong></p>
+
+        <!-- Fee info box (shown when threshold/fee is active) -->
+        <div id="withdrawFeeInfo" style="display:none; background:#1f2937; border:1px solid #f59e0b; border-radius:8px; padding:12px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="color:#9ca3af; font-size:13px;">Withdrawal Amount</span>
+            <span id="withdrawFeeAmountDisplay" style="color:white; font-weight:bold;">KSH 0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="color:#9ca3af; font-size:13px;">Processing Fee</span>
+            <span id="withdrawFeeDisplay" style="color:#f59e0b; font-weight:bold;">KSH 0</span>
+          </div>
+          <div style="background:#111827; border-radius:6px; padding:10px; font-size:12px; color:#9ca3af; line-height:1.5;">
+            <strong style="color:#22c55e;">Good news!</strong> The fee you pay is <strong style="color:white;">added back to your bonus balance</strong> which you can use to play and win more. It's not lost — it comes back to you!
+          </div>
+        </div>
+
+        <div class="error-msg" id="withdrawError"></div>
+        <div class="success-msg" id="withdrawSuccess"></div>
+        <div class="spinner" id="withdrawSpinner"></div>
+        <button class="btn-submit" id="submitWithdrawBtn" style="background:var(--sc-orange);" onclick="submitWithdraw()">Withdraw</button>
+      </div>
+
+      <!-- Step 2: Waiting for fee STK payment -->
+      <div id="withdrawStep2" style="display:none; text-align:center;">
+        <div style="background:#1f2937; border-radius:10px; padding:20px; margin-bottom:15px;">
+          <div style="font-size:32px; margin-bottom:10px;">📱</div>
+          <div style="font-weight:bold; font-size:16px; color:white; margin-bottom:8px;">Payment Request Sent!</div>
+          <div style="font-size:13px; color:#9ca3af; margin-bottom:15px;">Check your phone for the M-Pesa STK push to pay the withdrawal fee. Enter your M-Pesa PIN to confirm.</div>
+
+          <div style="background:#111827; border-radius:8px; padding:12px; margin-bottom:15px; display:flex; justify-content:space-between;">
+            <div>
+              <div style="color:#9ca3af; font-size:11px;">Withdrawal</div>
+              <div id="wd2Amount" style="color:white; font-weight:bold; font-size:16px;">KSH 0</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="color:#9ca3af; font-size:11px;">Fee to Pay</div>
+              <div id="wd2Fee" style="color:#f59e0b; font-weight:bold; font-size:16px;">KSH 0</div>
+            </div>
+          </div>
+
+          <div id="withdrawCountdownArea" style="margin-bottom:15px;">
+            <div style="color:#9ca3af; font-size:12px; margin-bottom:5px;">Time remaining</div>
+            <div id="withdrawCountdown" style="font-size:28px; font-weight:bold; color:#3b82f6;">60</div>
+          </div>
+
+          <div id="withdrawWaitMsg" style="font-size:12px; color:#9ca3af; margin-bottom:15px;">Waiting for your payment confirmation...</div>
+
+          <div id="withdrawRetryArea" style="display:none;">
+            <p style="color:#f59e0b; font-size:13px; margin-bottom:10px;">Timer expired. If you didn't receive the prompt, tap Retry to resend.</p>
+            <button class="btn-submit" style="background:var(--sc-blue); margin-bottom:8px;" onclick="retryWithdrawStk()">Retry STK Push</button>
+          </div>
+
+          <button class="btn-submit" style="background:var(--sc-surface-3); color:var(--sc-muted);" onclick="cancelWithdrawal()">Cancel Withdrawal</button>
+        </div>
+        <div style="font-size:12px; color:#6b7280; text-align:center;">Once fee is paid, your KSH amount will be sent to your M-Pesa.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Account Popup -->
+  <div class="popup-overlay" id="deleteAccountPopup">
+    <div class="popup-content">
+      <span class="popup-close" onclick="document.getElementById('deleteAccountPopup').style.display='none'">×</span>
+      <h2 style="margin-top:0; color:#ef4444;">Delete Account</h2>
+      <p style="font-size:12px; color:#9ca3af; margin-bottom:15px;">Warning: This action is permanent and cannot be undone.</p>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" class="form-control" id="deleteUsername" readonly style="color:#9ca3af; background:#1f2937;">
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="text" class="form-control" id="deletePhone" readonly style="color:#9ca3af; background:#1f2937;">
+      </div>
+      <div class="form-group">
+        <label>Enter PIN to Confirm</label>
+        <input type="password" class="form-control" id="deletePin" maxlength="6">
+      </div>
+      <div class="error-msg" id="deleteError" style="margin-bottom:10px;"></div>
+      <button class="btn-submit" style="background:var(--sc-red);" onclick="submitDeleteAccount()">Delete My Account</button>
+    </div>
+  </div>
+
+  <!-- ===== PAGE POPUPS ===== -->
+
+  <!-- Transaction History Page -->
+  <div class="page-popup" id="page-transactions">
+    <div class="page-header">
+      <button class="page-back-btn" onclick="document.getElementById('page-transactions').style.display='none'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="page-title">Transaction History</h2>
+      <div style="width: 40px;"></div>
+    </div>
+    <div class="page-content">
+      <input type="text" class="search-box" id="txSearch" placeholder="Search type, amount or status..." oninput="filterTransactions()">
+      <div class="tabs-container" id="txTabs">
+        <button class="tab-btn active" onclick="setTxTab('all', this)">All</button>
+        <button class="tab-btn" onclick="setTxTab('deposit', this)">Deposits</button>
+        <button class="tab-btn" onclick="setTxTab('withdrawal', this)">Withdrawals</button>
+        <button class="tab-btn" onclick="setTxTab('referral', this)">Referrals</button>
+      </div>
+      <div id="transactionsList"></div>
+    </div>
+  </div>
+
+  <!-- Users Bets Page -->
+  <div class="page-popup" id="page-bets">
+    <div class="page-header">
+      <button class="page-back-btn" onclick="document.getElementById('page-bets').style.display='none'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="page-title">My Bets</h2>
+      <div style="width: 40px;"></div>
+    </div>
+    <div class="page-content">
+      <div class="tabs-container" id="betsTabs">
+        <button class="tab-btn active" onclick="setBetsTab('all', this)">All</button>
+        <button class="tab-btn" onclick="setBetsTab('win', this)">Win</button>
+        <button class="tab-btn" onclick="setBetsTab('lose', this)">Lose</button>
+      </div>
+      <div id="myBetsList"></div>
+      <div style="margin-top: 20px;">
+        <button style="width:100%; padding:15px; border-radius:8px; background:#22c55e; color:white; font-weight:bold; border:none; cursor:pointer;" onclick="window.location.href='index.html'">PLACE BET</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications Page -->
+  <div class="page-popup" id="page-notifications">
+    <div class="page-header">
+      <button class="page-back-btn" onclick="document.getElementById('page-notifications').style.display='none'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="page-title">Notifications</h2>
+      <div style="width: 40px;"></div>
+    </div>
+    <div class="page-content">
+      <div class="tabs-container" id="notifTabs">
+        <button class="tab-btn active" onclick="setNotifTab('all', this)">All</button>
+        <button class="tab-btn" onclick="setNotifTab('deposit', this)">Deposits</button>
+        <button class="tab-btn" onclick="setNotifTab('withdrawal', this)">Withdrawal</button>
+        <button class="tab-btn" onclick="setNotifTab('alert', this)">Alerts</button>
+      </div>
+      <div id="notificationsList"></div>
+    </div>
+  </div>
+
+  <!-- Refer and Earn Page -->
+  <div class="page-popup" id="page-referral">
+    <div class="page-header">
+      <button class="page-back-btn" onclick="document.getElementById('page-referral').style.display='none'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="page-title">Refer and Earn</h2>
+      <div style="width: 40px;"></div>
+    </div>
+    <div class="page-content">
+      <div style="text-align:center; padding:20px 0;">
+        <h3 style="color:#facc15; margin:0 0 10px 0;">Earn KSH 300.00</h3>
+        <p style="color:#9ca3af; font-size:14px;">Invite friends and earn for every active referral.</p>
+        <p style="color:#22c55e; font-size:13px; margin-top:10px; font-weight:bold;">Earn KSH 20 for each user you refer + 5% lifetime commission for every deposit.</p>
+      </div>
+      <div style="margin-bottom: 10px; color: white; font-weight: bold; font-size: 14px; text-align: center;">Your Referral Code: <span id="referralCodeText" style="color: #facc15;">xxxx</span></div>
+      <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+        <span id="referralLinkText" style="font-size:12px; color:#9ca3af; word-break:break-all;">https://swiftcrash.online/?ref=xxxx</span>
+        <button style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; flex-shrink:0; margin-left:10px;" onclick="copyReferral()">Copy</button>
+      </div>
+      <div class="social-row" style="margin-top:15px;">
+        <a href="#" class="social-btn social-ig" onclick="shareReferral('instagram')"><i class="fab fa-instagram fa-lg"></i></a>
+        <a href="#" class="social-btn social-fb" onclick="shareReferral('facebook')"><i class="fab fa-facebook-f fa-lg"></i></a>
+        <a href="#" class="social-btn social-x" onclick="shareReferral('twitter')"><i class="fa-brands fa-x-twitter fa-lg"></i></a>
+        <a href="#" class="social-btn" style="background:#25D366;" onclick="shareReferral('whatsapp')"><i class="fab fa-whatsapp fa-lg"></i></a>
+      </div>
+      
+      <div style="background: #1f2937; padding: 15px; border-radius: 10px; margin: 20px 0; display: flex; justify-content: space-between;">
+        <div style="text-align: center;">
+          <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Total Referrals</div>
+          <div style="color: #facc15; font-size: 20px; font-weight: bold;" id="refCount">0</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Active (Played)</div>
+          <div style="color: #22c55e; font-size: 20px; font-weight: bold;" id="refActive">0</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Total Earned</div>
+          <div style="color: #3b82f6; font-size: 20px; font-weight: bold;" id="refEarned">0</div>
+        </div>
+      </div>
+      <h3 style="font-size:16px;">Referral History</h3>
+      <div id="referralsList"></div>
+    </div>
+  </div>
+
+  <!-- Support Page -->
+  <div class="page-popup" id="page-support">
+    <div class="page-header">
+      <button class="page-back-btn" onclick="document.getElementById('page-support').style.display='none'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="page-title">Support</h2>
+      <div style="width: 40px;"></div>
+    </div>
+    <div class="page-content">
+      <p style="color:#9ca3af; font-size:14px; margin-bottom:20px;">Need help? Contact our support team.</p>
+      <a href="https://wa.me/254723308753" class="comm-btn comm-whatsapp" style="margin-bottom:15px; display:flex;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/></svg>
+        WhatsApp Chat
+      </a>
+      <a href="https://m.me/swiftcrash" class="comm-btn" style="background:#1877F2; margin-bottom:15px; display:flex;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        Facebook Messenger
+      </a>
+      <a href="mailto:support@swiftcrash.com" class="comm-btn comm-call" style="margin-bottom:15px; display:flex;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        Email Support
+      </a>
+    </div>
+  </div>
+
+  <!-- Change Password Page -->
+  <div class="page-popup" id="page-password">
+    <div class="page-header">
+      <button class="page-back-btn" onclick="document.getElementById('page-password').style.display='none'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="page-title">Change Password</h2>
+      <div style="width: 40px;"></div>
+    </div>
+    <div class="page-content">
+      <div class="card">
+        <div class="form-group" style="margin-bottom:15px;">
+          <label style="display:block; margin-bottom:5px; color:#9ca3af; font-size:12px;">New Password (6 digits)</label>
+          <input type="password" id="newPasswordInput" class="search-box" placeholder="Enter new PIN" maxlength="6">
+        </div>
+        <div class="form-group" style="margin-bottom:15px;">
+          <label style="display:block; margin-bottom:5px; color:#9ca3af; font-size:12px;">Confirm Password</label>
+          <input type="password" id="confirmPasswordInput" class="search-box" placeholder="Confirm new PIN" maxlength="6">
+        </div>
+        <button style="width:100%; padding:15px; border-radius:8px; background:#3b82f6; color:white; font-weight:bold; border:none; cursor:pointer;" onclick="submitQuickChangePassword()">Update Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terms and Conditions Page -->
+  <div class="page-popup" id="page-terms">
+    <div class="page-header">
+      <button class="page-back-btn" onclick="document.getElementById('page-terms').style.display='none'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="page-title">Terms &amp; Conditions</h2>
+      <div style="width: 40px;"></div>
+    </div>
+    <div class="page-content">
+      <p style="color:#9ca3af; font-size:14px; line-height:1.7;">By accessing and using Swiftcrash, you accept and agree to be bound by these terms. You must be 18 years or older to use this platform. All deposits and withdrawals are processed via M-Pesa. Swiftcrash reserves the right to suspend accounts found to be in violation of these terms.</p>
+    </div>
+  </div>
+
+  <!-- Privacy Policy Page -->
+  <div class="page-popup" id="page-privacy">
+    <div class="page-header">
+      <button class="page-back-btn" onclick="document.getElementById('page-privacy').style.display='none'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="page-title">Privacy Policy</h2>
+      <div style="width: 40px;"></div>
+    </div>
+    <div class="page-content">
+      <p style="color:#9ca3af; font-size:14px; line-height:1.7;">We collect your phone number and gameplay data solely for the purpose of operating the Swiftcrash platform. Your data is never sold to third parties. We use secure encryption to protect your information.</p>
+    </div>
+  </div>
+
+  <!-- Responsible Gaming Page -->
+  <div class="page-popup" id="page-responsible">
+    <div class="page-header">
+      <button class="page-back-btn" onclick="document.getElementById('page-responsible').style.display='none'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="page-title">Responsible Gaming</h2>
+      <div style="width: 40px;"></div>
+    </div>
+    <div class="page-content">
+      <p style="color:#9ca3af; font-size:14px; line-height:1.7;">Gambling should be fun. Never bet more than you can afford to lose. If you feel gambling is affecting your life, please reach out for help at <a href="tel:0715979797" style="color:#22c55e;">0715 979 797</a>.</p>
+    </div>
+  </div>
+
+  <script>
+
+  const BACKEND_URL = 'https://swiftcrashserver.onrender.com';
+
+  let currentUser = null;
+  let allTransactions = [];
+  let txFilterTab = 'all';
+  let txSearchText = '';
+  
+  let allBets = [];
+  let betsFilterTab = 'all';
+  
+  let allNotifications = [];
+  let notifFilterTab = 'all';
+
+  // Withdraw state
+  let withdrawPendingId = null;
+  let withdrawPendingRef = null;
+  let withdrawCountdownTimer = null;
+  let withdrawPollTimer = null;
+  let withdrawThresholdActive = false;
+
+  // =====================
+  //   TOAST
+  // =====================
+  function showNotification(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast-msg toast-${type}`;
+    toast.innerText = message;
+    container.appendChild(toast);
+    void toast.offsetWidth;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  window.alert = function(msg) {
+    const type = msg.toLowerCase().includes('fail') || msg.toLowerCase().includes('error') || msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('insufficient') ? 'error' : 'success';
+    showNotification(msg, type);
+  };
+
+  // =====================
+  //   INIT
+  // =====================
+  function initMenu() {
+    const userStr = localStorage.getItem('swiftcrash_user');
+    if (userStr) {
+      try {
+        currentUser = JSON.parse(userStr);
+        document.getElementById('userNameDisplay').innerText = currentUser.username || 'Swiftcrash user';
+        document.getElementById('userPhoneDisplay').innerText = currentUser.phone || '000000000';
+        document.getElementById('userBalanceDisplay').innerText = 'KSH ' + parseFloat(currentUser.balance || 0).toFixed(2);
+
+        const refLink = `https://swiftcrash.online/?ref=${currentUser.username}`;
+        const refEl = document.getElementById('referralLinkText');
+        if (refEl) refEl.innerText = refLink;
+        const refCodeEl = document.getElementById('referralCodeText');
+        if (refCodeEl) refCodeEl.innerText = currentUser.username;
+
+        fetchNotificationsCount();
+        refreshBalanceSilently();
+
+        setInterval(() => {
+          refreshBalanceSilently();
+          fetchNotificationsCount();
+        }, 10000);
+
+      } catch (e) {}
+    } else {
+      window.location.href = 'index.html';
+    }
+  }
+
+  // =====================
+  //   BALANCE REFRESH
+  // =====================
+  async function refreshBalanceSilently() {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/refresh-balance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+        body: JSON.stringify({ phone: currentUser.phone })
+      });
+      const data = await res.json();
+      if (data.success) {
+        currentUser.balance = parseFloat(data.balance);
+        localStorage.setItem('swiftcrash_user', JSON.stringify(currentUser));
+        document.getElementById('userBalanceDisplay').innerText = 'KSH ' + parseFloat(currentUser.balance).toFixed(2);
+      }
+    } catch (e) {}
+  }
+
+  // =====================
+  //   NOTIFICATIONS COUNT
+  // =====================
+  async function fetchNotificationsCount() {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/notifications?phone=${encodeURIComponent(currentUser.phone)}`);
+      const data = await res.json();
+      if (data.success) {
+        const unreadCount = data.notifications.filter(n => !n.is_read).length;
+        const badge = document.querySelector('.notification-badge');
+        if (badge) {
+          badge.innerText = unreadCount;
+          badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+        }
+      }
+    } catch (e) {}
+  }
+
+  // =====================
+  //   DEPOSIT LOGIC (full STK push + polling — matches index.html)
+  // =====================
+  function openDeposit() {
+    if (!currentUser) return;
+    document.getElementById('depositPhone').value = currentUser.phone;
+    document.getElementById('depositCurrentBalance').innerText = `KSH ${parseFloat(currentUser.balance || 0).toFixed(2)}`;
+    document.getElementById('depositAmount').value = 100;
+    document.getElementById('depositPopup').style.display = 'flex';
+    document.getElementById('depositSuccess').style.display = 'none';
+    document.getElementById('depositError').style.display = 'none';
+    document.getElementById('depositSpinner').style.display = 'none';
+    document.getElementById('submitDepositBtn').style.display = 'block';
+  }
+
+  async function submitDeposit() {
+    const amount = parseFloat(document.getElementById('depositAmount').value);
+    const errorEl = document.getElementById('depositError');
+    const successEl = document.getElementById('depositSuccess');
+    const spinner = document.getElementById('depositSpinner');
+    const btn = document.getElementById('submitDepositBtn');
+
+    errorEl.style.display = 'none';
+
+    if (!amount || amount < 100) {
+      errorEl.innerText = "Minimum deposit is KSH 100";
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    spinner.style.display = 'block';
+    btn.style.display = 'none';
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/pay`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: currentUser.phone, amount })
+      });
+      const data = await res.json();
+      spinner.style.display = 'none';
+
+      if (data.success) {
+        successEl.innerHTML = `STK sent. Waiting for payment confirmation... <span class="inline-dots" aria-label="Loading"></span>`;
+        successEl.style.display = 'block';
+
+        const reference = data.reference;
+        const oldBalance = parseFloat(currentUser.balance || 0);
+        let attempts = 0;
+
+        const checkInterval = setInterval(async () => {
+          attempts++;
+          try {
+            let isSuccess = false;
+            let isFailed = false;
+
+            try {
+              const receiptRes = await fetch(`${BACKEND_URL}/receipt/${reference}?t=${Date.now()}`);
+              const receiptData = await receiptRes.json();
+              if (receiptData.success) {
+                const status = receiptData.receipt.status;
+                if (status === "success" || status === "processing") isSuccess = true;
+                if (status === "cancelled" || status === "error" || status === "stk_failed") isFailed = true;
+              }
+            } catch (e) {}
+
+            await refreshBalanceSilently();
+            if (parseFloat(currentUser.balance) > oldBalance) isSuccess = true;
+
+            if (isSuccess) {
+              clearInterval(checkInterval);
+              window.completeButtonAction(btn, 'Done');
+              successEl.innerHTML = `Payment confirmed ✅ Updating balance... <span class="inline-dots" aria-label="Loading"></span>`;
+
+              setTimeout(() => {
+                const newBal = parseFloat(currentUser.balance).toFixed(2);
+                successEl.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span style="margin-top:10px;color:#22c55e;font-weight:bold;">Balance updated successfully!</span></div>`;
+                document.getElementById('depositCurrentBalance').innerText = `KSH ${newBal}`;
+                document.getElementById('userBalanceDisplay').innerText = `KSH ${newBal}`;
+                setTimeout(() => {
+                  document.getElementById('depositPopup').style.display = 'none';
+                  btn.style.display = 'block';
+                  successEl.style.display = 'none';
+                }, 2000);
+              }, 1000);
+
+            } else if (isFailed || attempts > 20) {
+              clearInterval(checkInterval);
+              errorEl.innerText = isFailed ? "Payment failed or cancelled." : "Taking longer than usual. If successful, your balance will update shortly.";
+              errorEl.style.display = 'block';
+              btn.style.display = 'block';
+              successEl.style.display = 'none';
+            }
+          } catch (e) {}
+        }, 3000);
+
+      } else {
+        errorEl.innerText = "Failed: " + (data.error || "Could not send STK Push");
+        errorEl.style.display = 'block';
+        btn.style.display = 'block';
+      }
+    } catch (err) {
+      spinner.style.display = 'none';
+      errorEl.innerText = "Network error connecting to payment gateway";
+      errorEl.style.display = 'block';
+      btn.style.display = 'block';
+    }
+  }
+
+  // =====================
+  //   WITHDRAW LOGIC (full threshold + fee flow — matches index.html)
+  // =====================
+  function calcFeePreview(amount) {
+    if (amount < 500) return 0;
+    const tiers = Math.floor((amount - 500) / 100);
+    return 100 + tiers * 50;
+  }
+
+  function updateWithdrawFeePreview() {
+    const amount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
+    const feeInfo = document.getElementById('withdrawFeeInfo');
+    if (!withdrawThresholdActive) { feeInfo.style.display = 'none'; return; }
+    if (amount >= 500) {
+      const fee = calcFeePreview(amount);
+      document.getElementById('withdrawFeeAmountDisplay').innerText = 'KSH ' + amount.toFixed(0);
+      document.getElementById('withdrawFeeDisplay').innerText = 'KSH ' + fee;
+      feeInfo.style.display = 'block';
+    } else {
+      feeInfo.style.display = 'none';
+    }
+  }
+
+  async function openWithdraw() {
+    if (!currentUser) { showNotification("Please login first", "error"); return; }
+    document.getElementById('withdrawPhone').value = currentUser.phone;
+    document.getElementById('withdrawCurrentBalance').innerText = `KSH ${parseFloat(currentUser.balance || 0).toFixed(2)}`;
+    document.getElementById('withdrawAmount').value = 500;
+    document.getElementById('withdrawPopup').style.display = 'flex';
+    document.getElementById('withdrawSuccess').style.display = 'none';
+    document.getElementById('withdrawError').style.display = 'none';
+    document.getElementById('withdrawStep1').style.display = 'block';
+    document.getElementById('withdrawStep2').style.display = 'none';
+    document.getElementById('withdrawSpinner').style.display = 'none';
+    document.getElementById('submitWithdrawBtn').style.display = 'block';
+    document.getElementById('withdrawFeeInfo').style.display = 'none';
+    withdrawPendingId = null;
+    withdrawPendingRef = null;
+    withdrawThresholdActive = false;
+
+    try {
+      const thRes = await fetch(`${BACKEND_URL}/api/threshold-mode`);
+      const thData = await thRes.json();
+      if (thData.success && thData.threshold_mode !== 'disabled') {
+        withdrawThresholdActive = true;
+      }
+    } catch (e) {}
+    updateWithdrawFeePreview();
+  }
+
+  function handleWithdrawClose() {
+    if (withdrawPendingId && withdrawPendingRef) {
+      if (confirm("You have a pending withdrawal. Closing will cancel it and refund your balance. Are you sure?")) {
+        cancelWithdrawal();
+      }
+      return;
+    }
+    document.getElementById('withdrawPopup').style.display = 'none';
+    resetWithdrawUI();
+  }
+
+  function resetWithdrawUI() {
+    clearInterval(withdrawCountdownTimer);
+    clearInterval(withdrawPollTimer);
+    withdrawPendingId = null;
+    withdrawPendingRef = null;
+    withdrawThresholdActive = false;
+    document.getElementById('withdrawStep1').style.display = 'block';
+    document.getElementById('withdrawStep2').style.display = 'none';
+    document.getElementById('submitWithdrawBtn').style.display = 'block';
+    document.getElementById('withdrawSpinner').style.display = 'none';
+    document.getElementById('withdrawError').style.display = 'none';
+    document.getElementById('withdrawSuccess').style.display = 'none';
+    document.getElementById('withdrawRetryArea').style.display = 'none';
+    document.getElementById('withdrawFeeInfo').style.display = 'none';
+  }
+
+  async function submitWithdraw() {
+    const amount = parseFloat(document.getElementById('withdrawAmount').value);
+    const errorEl = document.getElementById('withdrawError');
+    const spinner = document.getElementById('withdrawSpinner');
+    const btn = document.getElementById('submitWithdrawBtn');
+
+    errorEl.style.display = 'none';
+
+    if (!amount || amount < 500) {
+      errorEl.innerText = "Minimum withdrawal is KSH 500";
+      errorEl.style.display = 'block';
+      return;
+    }
+    if (amount > parseFloat(currentUser.balance || 0)) {
+      errorEl.innerText = "Your account balance is too low, kindly make a deposit";
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    spinner.style.display = 'block';
+    btn.style.display = 'none';
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/withdraw`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: currentUser.phone, amount })
+      });
+      const data = await res.json();
+      spinner.style.display = 'none';
+
+      if (data.success) {
+        currentUser.balance = parseFloat(data.balance);
+        localStorage.setItem('swiftcrash_user', JSON.stringify(currentUser));
+        document.getElementById('userBalanceDisplay').innerText = 'KSH ' + parseFloat(currentUser.balance).toFixed(2);
+
+        if (!data.threshold) {
+          // Direct withdrawal (no fee)
+          window.completeButtonAction(btn, 'Done');
+          document.getElementById('withdrawSuccess').innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span style="margin-top:10px;color:#22c55e;font-weight:bold;">Withdrawal successful! Amount will be sent to M-Pesa shortly.</span></div>`;
+          document.getElementById('withdrawSuccess').style.display = 'block';
+          document.getElementById('withdrawCurrentBalance').innerText = `KSH ${parseFloat(currentUser.balance).toFixed(2)}`;
+          showNotification("Withdrawal successful!", "success");
+          setTimeout(() => {
+            document.getElementById('withdrawPopup').style.display = 'none';
+            resetWithdrawUI();
+          }, 2500);
+        } else {
+          // Threshold mode: STK push sent for fee
+          withdrawThresholdActive = true;
+          withdrawPendingId = data.pendingId;
+          withdrawPendingRef = data.reference;
+          document.getElementById('withdrawCurrentBalance').innerText = `KSH ${parseFloat(currentUser.balance).toFixed(2)}`;
+          document.getElementById('wd2Amount').innerText = 'KSH ' + parseFloat(data.withdrawAmount).toFixed(0);
+          document.getElementById('wd2Fee').innerText = 'KSH ' + parseFloat(data.fee).toFixed(0);
+          document.getElementById('withdrawStep1').style.display = 'none';
+          document.getElementById('withdrawStep2').style.display = 'block';
+          document.getElementById('withdrawRetryArea').style.display = 'none';
+          document.getElementById('withdrawCountdownArea').style.display = 'block';
+          document.getElementById('withdrawCountdown').innerText = '60';
+          document.getElementById('withdrawWaitMsg').innerText = 'Waiting for your payment confirmation...';
+
+          if (!data.stkSent) {
+            document.getElementById('withdrawWaitMsg').innerText = 'STK push could not be sent. Please tap Retry.';
+            document.getElementById('withdrawRetryArea').style.display = 'block';
+          }
+
+          startWithdrawCountdown();
+          startWithdrawPoll();
+        }
+      } else {
+        errorEl.innerText = data.error || "Withdrawal failed";
+        errorEl.style.display = 'block';
+        btn.style.display = 'block';
+        showNotification(data.error || "Withdrawal failed", "error");
+      }
+    } catch (err) {
+      spinner.style.display = 'none';
+      errorEl.innerText = "Network error. Try again.";
+      errorEl.style.display = 'block';
+      btn.style.display = 'block';
+    }
+  }
+
+  function startWithdrawCountdown() {
+    let secs = 60;
+    const el = document.getElementById('withdrawCountdown');
+    clearInterval(withdrawCountdownTimer);
+    withdrawCountdownTimer = setInterval(() => {
+      secs--;
+      if (el) el.innerText = secs;
+      if (secs <= 0) {
+        clearInterval(withdrawCountdownTimer);
+        document.getElementById('withdrawCountdownArea').style.display = 'none';
+        document.getElementById('withdrawRetryArea').style.display = 'block';
+        document.getElementById('withdrawWaitMsg').innerText = 'Timer expired. Tap Retry if you did not receive the prompt.';
+      }
+    }, 1000);
+  }
+
+  function startWithdrawPoll() {
+    clearInterval(withdrawPollTimer);
+    let attempts = 0;
+    withdrawPollTimer = setInterval(async () => {
+      attempts++;
+      if (!withdrawPendingId) { clearInterval(withdrawPollTimer); return; }
+      try {
+        const res = await fetch(`${BACKEND_URL}/withdrawal-status/${withdrawPendingId}`);
+        const data = await res.json();
+        if (data.success) {
+          const status = data.withdrawal.status;
+          if (status === 'success') {
+            clearInterval(withdrawPollTimer);
+            clearInterval(withdrawCountdownTimer);
+            await refreshBalanceSilently();
+            window.completeButtonAction(document.getElementById('submitWithdrawBtn'), 'Done');
+            withdrawPendingId = null;
+            withdrawPendingRef = null;
+            document.getElementById('withdrawStep2').innerHTML = `<div style="text-align:center;padding:30px;"><div style="font-size:50px;margin-bottom:15px;">✅</div><div style="font-size:18px;font-weight:bold;color:#22c55e;margin-bottom:10px;">Withdrawal Successful!</div><div style="font-size:13px;color:#9ca3af;">Your amount has been queued for M-Pesa transfer. The fee has been added to your bonus balance.</div></div>`;
+            showNotification("Withdrawal successful!", "success");
+            setTimeout(() => {
+              document.getElementById('withdrawPopup').style.display = 'none';
+              resetWithdrawUI();
+            }, 3000);
+          } else if (status === 'cancelled' || status === 'failed') {
+            clearInterval(withdrawPollTimer);
+            clearInterval(withdrawCountdownTimer);
+            withdrawPendingId = null;
+            withdrawPendingRef = null;
+            const msg = status === 'cancelled' ? 'Withdrawal cancelled. Balance refunded.' : 'Withdrawal failed. Balance refunded.';
+            document.getElementById('withdrawStep2').innerHTML = `<div style="text-align:center;padding:30px;"><div style="font-size:50px;margin-bottom:15px;">${status === 'cancelled' ? '❌' : '⚠️'}</div><div style="font-size:18px;font-weight:bold;color:#ef4444;margin-bottom:10px;">${msg}</div></div>`;
+            await refreshBalanceSilently();
+            setTimeout(() => {
+              document.getElementById('withdrawPopup').style.display = 'none';
+              resetWithdrawUI();
+            }, 3000);
+          }
+        }
+      } catch (e) {}
+      if (attempts > 40) clearInterval(withdrawPollTimer);
+    }, 3000);
+  }
+
+  async function retryWithdrawStk() {
+    if (!withdrawPendingId) return;
+    document.getElementById('withdrawRetryArea').style.display = 'none';
+    document.getElementById('withdrawCountdownArea').style.display = 'block';
+    document.getElementById('withdrawCountdown').innerText = '60';
+    try {
+      const res = await fetch(`${BACKEND_URL}/withdrawal-retry-stk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: currentUser.phone, pendingId: withdrawPendingId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        startWithdrawCountdown();
+        document.getElementById('withdrawWaitMsg').innerText = 'New STK push sent. Check your phone.';
+      } else {
+        document.getElementById('withdrawRetryArea').style.display = 'block';
+        document.getElementById('withdrawCountdownArea').style.display = 'none';
+        document.getElementById('withdrawWaitMsg').innerText = 'Retry failed: ' + (data.error || 'Unknown error');
+      }
+    } catch (e) {
+      document.getElementById('withdrawRetryArea').style.display = 'block';
+      document.getElementById('withdrawCountdownArea').style.display = 'none';
+    }
+  }
+
+  async function cancelWithdrawal() {
+    if (!withdrawPendingId) {
+      document.getElementById('withdrawPopup').style.display = 'none';
+      resetWithdrawUI();
+      return;
+    }
+    try {
+      const res = await fetch(`${BACKEND_URL}/cancel-withdrawal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: currentUser.phone, pendingId: withdrawPendingId })
+      });
+      const data = await res.json();
+      clearInterval(withdrawPollTimer);
+      clearInterval(withdrawCountdownTimer);
+      withdrawPendingId = null;
+      withdrawPendingRef = null;
+      if (data.success) {
+        currentUser.balance = parseFloat(data.balance);
+        localStorage.setItem('swiftcrash_user', JSON.stringify(currentUser));
+        document.getElementById('userBalanceDisplay').innerText = 'KSH ' + parseFloat(currentUser.balance).toFixed(2);
+        showNotification("Withdrawal cancelled. Balance refunded.", "error");
+      }
+    } catch (e) {}
+    document.getElementById('withdrawPopup').style.display = 'none';
+    resetWithdrawUI();
+  }
+
+  // =====================
+  //   TRANSACTION HISTORY
+  // =====================
+  async function openTransactionHistory() {
+    document.getElementById('page-transactions').style.display = 'flex';
+    document.getElementById('transactionsList').innerHTML = '<div class="loading-state"><span class="spinner" style="display:inline-block;" aria-hidden="true"></span><span>Loading transactions...</span></div>';
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/transactions-history`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: currentUser.phone })
+      });
+      const data = await res.json();
+      if (data.success) {
+        allTransactions = data.transactions || [];
+        renderTransactions();
+      } else {
+        document.getElementById('transactionsList').innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading transactions</p>';
+      }
+    } catch (e) {
+      document.getElementById('transactionsList').innerHTML = '<p style="text-align:center; color:#ef4444;">Error connecting to server</p>';
+    }
+  }
+
+  function setTxTab(tab, el) {
+    txFilterTab = tab;
+    document.querySelectorAll('#txTabs .tab-btn').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderTransactions();
+  }
+
+  function filterTransactions() {
+    txSearchText = document.getElementById('txSearch').value.toLowerCase();
+    renderTransactions();
+  }
+
+  function renderTransactions() {
+    const list = document.getElementById('transactionsList');
+    let filtered = allTransactions;
+    if (txFilterTab !== 'all') {
+      if (txFilterTab === 'referral') {
+        filtered = filtered.filter(tx => tx.type.includes('referral'));
+      } else if (txFilterTab === 'withdrawal') {
+        filtered = filtered.filter(tx => tx.type === 'withdrawal' || tx.type === 'withdraw');
+      } else {
+        filtered = filtered.filter(tx => tx.type === txFilterTab);
+      }
+    }
+    if (txSearchText) {
+      filtered = filtered.filter(tx =>
+        tx.type.toLowerCase().includes(txSearchText) ||
+        (tx.amount && tx.amount.toString().includes(txSearchText)) ||
+        (tx.status && tx.status.toLowerCase().includes(txSearchText))
+      );
+    }
+    if (filtered.length === 0) {
+      list.innerHTML = '<div style="text-align:center; color:#9ca3af; padding:20px;">No transactions found</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(tx => {
+      const isCredit = tx.type === 'deposit' || tx.type === 'win' || tx.type.includes('referral');
+      const borderColor = tx.type === 'deposit' ? '#22c55e' : (tx.type === 'withdrawal' || tx.type === 'withdraw') ? '#f59e0b' : '#3b82f6';
+      return `
+      <div style="background:#1f2937; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-left: 4px solid ${borderColor}">
+        <div>
+          <div style="font-weight:bold; font-size:14px; text-transform:capitalize;">${tx.type.replace(/_/g, ' ')}</div>
+          <div style="font-size:11px; color:#9ca3af;">${new Date(tx.created_at).toLocaleString()}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:bold; color:${isCredit ? '#22c55e' : '#f59e0b'}">
+            ${isCredit ? '+' : '-'}KSH ${parseFloat(tx.amount).toFixed(2)}
+          </div>
+          <div style="font-size:11px; color:${tx.status==='success'?'#22c55e':(tx.status==='failed'?'#ef4444':'#f59e0b')}; text-transform:capitalize;">${tx.status || ''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // =====================
+  //   MY BETS
+  // =====================
+  async function openMyBets() {
+    document.getElementById('page-bets').style.display = 'flex';
+    document.getElementById('myBetsList').innerHTML = '<div class="loading-state"><span class="spinner" style="display:inline-block;" aria-hidden="true"></span><span>Loading bets...</span></div>';
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/my-bets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: currentUser.phone })
+      });
+      const data = await res.json();
+      if (data.success) {
+        allBets = data.bets || [];
+        renderBets();
+      } else {
+        document.getElementById('myBetsList').innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading bets</p>';
+      }
+    } catch (e) {
+      document.getElementById('myBetsList').innerHTML = '<p style="text-align:center; color:#ef4444;">Error connecting to server</p>';
+    }
+  }
+
+  function setBetsTab(tab, el) {
+    betsFilterTab = tab;
+    document.querySelectorAll('#betsTabs .tab-btn').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderBets();
+  }
+
+  function renderBets() {
+    const list = document.getElementById('myBetsList');
+    let filtered = allBets;
+    if (betsFilterTab === 'win') {
+      filtered = filtered.filter(b => b.status === 'cashed_out');
+    } else if (betsFilterTab === 'lose') {
+      filtered = filtered.filter(b => b.status === 'lost');
+    }
+    if (filtered.length === 0) {
+      list.innerHTML = '<div style="text-align:center; color:#9ca3af; padding:20px;">No bets found</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(bet => `
+      <div style="background:#1f2937; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-left: 4px solid ${bet.status === 'cashed_out' ? '#22c55e' : (bet.status==='lost' ? '#ef4444' : '#f59e0b')}">
+        <div>
+          <div style="font-weight:bold; font-size:14px; text-transform:capitalize;">${bet.status.replace(/_/g, ' ')}</div>
+          <div style="font-size:11px; color:#9ca3af;">${new Date(bet.created_at).toLocaleString()}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:bold; color:#fff;">Bet: KSH ${parseFloat(bet.amount).toFixed(2)}</div>
+          ${bet.status === 'cashed_out'
+            ? `<div style="font-size:12px;color:#22c55e;font-weight:bold;">Won: KSH ${(parseFloat(bet.amount)*parseFloat(bet.multiplier)).toFixed(2)} (${bet.multiplier}x)</div>`
+            : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // =====================
+  //   NOTIFICATIONS
+  // =====================
+  async function openNotifications() {
+    document.getElementById('page-notifications').style.display = 'flex';
+    document.getElementById('notificationsList').innerHTML = '<div class="loading-state"><span class="spinner" style="display:inline-block;" aria-hidden="true"></span><span>Loading notifications...</span></div>';
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/notifications?phone=${encodeURIComponent(currentUser.phone)}`);
+      const data = await res.json();
+      if (data.success) {
+        allNotifications = data.notifications || [];
+        renderNotifications();
+
+        fetch(`${BACKEND_URL}/api/notifications/mark-read`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: currentUser.phone })
+        });
+        const badge = document.querySelector('.notification-badge');
+        if (badge) badge.style.display = 'none';
+      } else {
+        document.getElementById('notificationsList').innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading notifications</p>';
+      }
+    } catch (e) {
+      document.getElementById('notificationsList').innerHTML = '<p style="text-align:center; color:#ef4444;">Error connecting to server</p>';
+    }
+  }
+
+  function setNotifTab(tab, el) {
+    notifFilterTab = tab;
+    document.querySelectorAll('#notifTabs .tab-btn').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderNotifications();
+  }
+
+  function renderNotifications() {
+    const list = document.getElementById('notificationsList');
+    let filtered = allNotifications;
+    if (notifFilterTab !== 'all') {
+      if (notifFilterTab === 'alert') {
+        filtered = filtered.filter(n => !n.message.toLowerCase().includes('deposit') && !n.message.toLowerCase().includes('withdraw'));
+      } else {
+        filtered = filtered.filter(n => n.message.toLowerCase().includes(notifFilterTab));
+      }
+    }
+    if (filtered.length === 0) {
+      list.innerHTML = '<div style="text-align:center; color:#9ca3af; padding:20px;">No notifications found</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(n => `
+      <div style="background:${n.is_read ? '#1f2937' : '#1e293b'}; padding:10px; border-radius:5px; margin-bottom:8px; font-size:13px; border-left:3px solid ${n.is_read ? '#3b82f6' : '#f59e0b'};">
+        ${n.message}
+        <div style="font-size:10px; color:#9ca3af; margin-top:5px;">${new Date(n.created_at).toLocaleString()}</div>
+      </div>
+    `).join('');
+  }
+
+  // =====================
+  //   REFERRAL
+  // =====================
+  async function openReferralHistory() {
+    document.getElementById('page-referral').style.display = 'flex';
+    document.getElementById('referralsList').innerHTML = '<div class="loading-state"><span class="spinner" style="display:inline-block;" aria-hidden="true"></span><span>Loading referrals...</span></div>';
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/referrals?phone=${encodeURIComponent(currentUser.phone)}`);
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('refCount').innerText = data.referrals.length;
+        document.getElementById('refActive').innerText = data.active_referrals || 0;
+        document.getElementById('refEarned').innerText = 'KSH ' + parseFloat(data.total_earned || data.earned_amount || 0).toFixed(0);
+
+        const list = document.getElementById('referralsList');
+        if (data.referrals.length === 0) {
+          list.innerHTML = '<div style="text-align:center; color:#9ca3af; font-size:12px; margin-top:20px;">No referrals yet</div>';
+        } else {
+          list.innerHTML = data.referrals.map(r => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#1f2937; border-radius:8px; margin-bottom:8px;">
+              <div>
+                <div style="color:white; font-weight:bold; font-size:14px;">${r.username}</div>
+                <div style="color:#9ca3af; font-size:11px;">${new Date(r.created_at).toLocaleDateString()}</div>
+              </div>
+              <div style="padding:5px 10px; border-radius:4px; font-size:12px; font-weight:bold; background:${r.status==='active'?'rgba(34,197,94,0.2)':'rgba(156,163,175,0.2)'}; color:${r.status==='active'?'#22c55e':'#9ca3af'};">
+                ${r.status === 'active' ? 'Active' : 'Pending'}
+              </div>
+            </div>
+          `).join('');
+        }
+      } else {
+        document.getElementById('referralsList').innerHTML = '<p style="text-align:center; color:#ef4444;">Error loading referrals</p>';
+      }
+    } catch (e) {
+      document.getElementById('referralsList').innerHTML = '<p style="text-align:center; color:#ef4444;">Error connecting to server</p>';
+    }
+  }
+
+  function copyReferral() {
+    if (!currentUser) return;
+    const link = `https://swiftcrash.online/?ref=${currentUser.username}`;
+    navigator.clipboard.writeText(link).then(() => showNotification('Referral link copied!', 'success')).catch(() => {
+      showNotification('Link: ' + link, 'success');
+    });
+  }
+
+  function shareReferral(platform) {
+    if (!currentUser) return;
+    const link = `https://swiftcrash.online/?ref=${currentUser.username}`;
+    const msg = encodeURIComponent(`Join me on Swiftcrash and earn bonuses! ${link}`);
+    const urls = {
+      whatsapp: `https://wa.me/?text=${msg}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`,
+      twitter: `https://twitter.com/intent/tweet?text=${msg}`,
+      instagram: null
+    };
+    if (urls[platform]) {
+      window.open(urls[platform], '_blank');
+    } else {
+      copyReferral();
+    }
+  }
+
+  // =====================
+  //   CHANGE PASSWORD
+  // =====================
+  async function submitQuickChangePassword() {
+    const newPin = document.getElementById('newPasswordInput').value;
+    const confirmPin = document.getElementById('confirmPasswordInput').value;
+
+    if (!newPin || !confirmPin) { showNotification("Fill all fields", "error"); return; }
+    if (newPin !== confirmPin) { showNotification("Passwords do not match", "error"); return; }
+    if (newPin.length !== 6) { showNotification("PIN must be 6 digits", "error"); return; }
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/change-pin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: currentUser.phone, oldPin: currentUser.pin, newPin })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Password updated successfully!", "success");
+        window.completeButtonAction(null, 'Done');
+        currentUser.pin = newPin;
+        localStorage.setItem('swiftcrash_user', JSON.stringify(currentUser));
+        document.getElementById('newPasswordInput').value = '';
+        document.getElementById('confirmPasswordInput').value = '';
+        setTimeout(() => document.getElementById('page-password').style.display = 'none', 2000);
+      } else {
+        showNotification(data.error || "Update failed", "error");
+      }
+    } catch (e) {
+      showNotification("Error connecting to server", "error");
+    }
+  }
+
+  // =====================
+  //   SIGN OUT & MISC
+  // =====================
+  function signOut() {
+    localStorage.removeItem('swiftcrash_user');
+    window.location.href = 'index.html';
+  }
+
+  function toggleAccordion(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function openDeleteAccount() {
+    if (!currentUser) return;
+    document.getElementById('deleteUsername').value = currentUser.username;
+    document.getElementById('deletePhone').value = currentUser.phone;
+    document.getElementById('deletePin').value = '';
+    document.getElementById('deleteError').style.display = 'none';
+    document.getElementById('deleteAccountPopup').style.display = 'flex';
+  }
+
+  async function submitDeleteAccount() {
+    const pin = document.getElementById('deletePin').value;
+    const errEl = document.getElementById('deleteError');
+    errEl.style.display = 'none';
+
+    if (!pin) { errEl.innerText = "Please enter your PIN"; errEl.style.display = 'block'; return; }
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/delete-account`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: currentUser.phone, pin })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showNotification("Account deleted successfully", "success");
+        window.completeButtonAction(null, 'Done');
+        document.getElementById('deleteAccountPopup').style.display = 'none';
+        localStorage.removeItem('swiftcrash_user');
+        setTimeout(() => window.location.href = 'index.html', 1500);
+      } else {
+        errEl.innerText = data.error || "Failed to delete account";
+        errEl.style.display = 'block';
+      }
+    } catch (e) {
+      errEl.innerText = "Network error";
+      errEl.style.display = 'block';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initMenu);
+
+  </script>
+  <script>
+    (function syncSwiftTheme() {
+      const theme = localStorage.getItem('swiftcrash_theme') === 'soft' ? 'soft' : 'dark';
+      document.body.dataset.theme = theme;
+    })();
+  </script>
+  <script>
+    /* Shared Swiftcrash button behavior: works for static and dynamically-rendered buttons. */
+    (() => {
+      const BUTTON_SELECTOR = 'button, [role="button"], .btn-share, .social-btn';
+      let activeButton = null;
+
+      const getButton = (node) => {
+        const element = node instanceof Element ? node : node?.parentElement;
+        return element?.closest(BUTTON_SELECTOR) || null;
+      };
+
+      const enhance = (button) => {
+        if (!(button instanceof HTMLElement) || button.dataset.scEnhanced === 'true') return;
+        button.dataset.scEnhanced = 'true';
+        button.classList.add('sc-interactive-button');
+      };
+
+      const makeRipple = (button, clientX, clientY) => {
+        if (!(button instanceof HTMLElement) || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
+        const rect = button.getBoundingClientRect();
+        const x = Number.isFinite(clientX) ? clientX - rect.left : rect.width / 2;
+        const y = Number.isFinite(clientY) ? clientY - rect.top : rect.height / 2;
+        const radius = Math.sqrt(Math.pow(Math.max(x, rect.width - x), 2) + Math.pow(Math.max(y, rect.height - y), 2));
+        const ripple = document.createElement('span');
+        ripple.className = 'sc-ripple';
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+        ripple.style.setProperty('--sc-ripple-scale', String(Math.max(radius * 2, 1)));
+        button.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+      };
+
+      window.completeButtonAction = (button, label = 'Done') => {
+        const target = getButton(button) || activeButton;
+        if (!(target instanceof HTMLElement) || target.disabled) return;
+        if (!target.dataset.scOriginalHTML) target.dataset.scOriginalHTML = target.innerHTML;
+        target.classList.remove('sc-pressing');
+        target.classList.add('sc-success');
+        target.setAttribute('aria-live', 'polite');
+        target.innerHTML = `
+          <span class="sc-success-content">
+            <svg class="sc-success-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m5 12 4 4L19 6"></path>
+            </svg>
+            <span>${label}</span>
+          </span>`;
+        window.setTimeout(() => {
+          if (!target.isConnected || !target.dataset.scOriginalHTML) return;
+          target.innerHTML = target.dataset.scOriginalHTML;
+          target.classList.remove('sc-success');
+          delete target.dataset.scOriginalHTML;
+        }, 2200);
+      };
+
+      document.addEventListener('pointerdown', (event) => {
+        const button = getButton(event.target);
+        if (!button) return;
+        enhance(button);
+        activeButton = button;
+        button.classList.add('sc-pressing');
+        makeRipple(button, event.clientX, event.clientY);
+      }, { passive: true });
+
+      document.addEventListener('pointerup', (event) => {
+        const button = getButton(event.target) || activeButton;
+        if (button) button.classList.remove('sc-pressing');
+      }, { passive: true });
+
+      document.addEventListener('pointercancel', () => {
+        if (activeButton) activeButton.classList.remove('sc-pressing');
+      }, { passive: true });
+
+      document.addEventListener('click', (event) => {
+        const button = getButton(event.target);
+        if (!button) return;
+        enhance(button);
+        activeButton = button;
+        if (event.detail === 0) makeRipple(button);
+      });
+
+      document.querySelectorAll(BUTTON_SELECTOR).forEach(enhance);
+      new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (!(node instanceof Element)) return;
+            if (node.matches(BUTTON_SELECTOR)) enhance(node);
+            node.querySelectorAll?.(BUTTON_SELECTOR).forEach(enhance);
+          });
+        });
+      }).observe(document.body, { childList: true, subtree: true });
+    })();
+  </script>
+  <script>
+    (() => {
+      const map = {
+        'index.html': 'index.html',
+        'Menu.html': 'Menu.html',
+        'Wallet.html': 'Wallet.html',
+        'predictor.html': 'predictor.html',
+        'manifest.json': 'manifest.json'
+      };
+      document.querySelectorAll('a[href]').forEach(link => {
+        const href = link.getAttribute('href');
+        if (map[href]) link.setAttribute('href', map[href]);
+      });
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('sw.js', { scope:'./' }).catch(() => {}));
+      }
+      document.querySelectorAll('.popup-overlay .popup-content').forEach(content => {
+        if (content.querySelector('.sc-popup-back')) return;
+        const overlay = content.closest('.popup-overlay');
+        const back = document.createElement('button');
+        back.type = 'button';
+        back.className = 'sc-popup-back';
+        back.textContent = '←';
+        back.setAttribute('aria-label', 'Back');
+        back.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;margin-bottom:10px;border:1px solid var(--sc-border);border-radius:10px;background:var(--sc-surface-2);color:var(--sc-text);font-size:20px;cursor:pointer;';
+        back.onclick = () => { if (overlay) overlay.style.display = 'none'; };
+        content.insertBefore(back, content.firstChild);
+      });
+    })();
+  </script>
+</body>
+</html>
